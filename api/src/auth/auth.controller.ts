@@ -13,7 +13,7 @@ export class AuthController {
   async login(@Body() data: LoginDto, @Res({ passthrough: true }) res: Response) {
     const result = await this.authService.login(data);
 
-    res.cookie('access-token', result.access_token, { httpOnly: true })
+    // res.cookie('access-token', result.access_token, { httpOnly: true })
     return result;
   }
 
@@ -21,13 +21,13 @@ export class AuthController {
   async register(@Body() data: RegisterDto, @Res({ passthrough: true }) res: Response) {
     const result = await this.authService.register(data);
 
-    res.cookie('access-token', result.access_token, { httpOnly: true })
+    // res.cookie('access-token', result.access_token, { httpOnly: true })
     return result;
   }
 
   @Post('logout')
   async logout(@Res({ passthrough: true }) res: Response) {
-    res.cookie('access-token', '', { httpOnly: true, expires: new Date() });
+    // res.cookie('access-token', '', { httpOnly: true, expires: new Date() });
   }
 
   @UseGuards(JwtAuthGuard)

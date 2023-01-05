@@ -5,15 +5,17 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { FormEventHandler, useState } from 'react'
 import { fetcher } from '../../lib/queryFn'
+import { removeTokens } from '../../lib/tokenStore'
 
 const Login: NextPage = () => {
   const { data, refetch } = useQuery({ queryKey: ['/auth/me'] });
 
   const logout = async() => {
-    const res = await fetcher('http://localhost:4000/auth/logout', {
-      method: 'POST',
-    })
+    // const res = await fetcher('http://localhost:4000/auth/logout', {
+    //   method: 'POST',
+    // })
     // const data = await res.json();
+    removeTokens()
     refetch();
   }
 

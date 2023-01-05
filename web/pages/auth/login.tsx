@@ -5,6 +5,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { FormEventHandler, useState } from 'react'
 import { fetcher } from '../../lib/queryFn'
+import { setTokens } from '../../lib/tokenStore'
 
 const Login: NextPage = () => {
   const [form, setForm] = useState({
@@ -19,7 +20,7 @@ const Login: NextPage = () => {
         body: JSON.stringify(credentials)
       });
       const data = await res.json();
-      // cookies.set('access-token')
+      setTokens(data);
       return data;
     }
   });
