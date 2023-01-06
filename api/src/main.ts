@@ -10,6 +10,7 @@ async function bootstrap() {
 
   app.use(cookieParser());
   app.enableCors({
+    // For HTTP only cookie. Uncomment to use this strategy instead.
     // credentials: true,
     // origin: ['http://localhost:3000']
   });

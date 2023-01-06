@@ -5,7 +5,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { FormEventHandler, useState } from 'react'
 import { fetcher } from '../../lib/queryFn'
-import { removeTokens } from '../../lib/tokenStore'
+import { removeTokens, setTokens } from '../../lib/tokenStore'
 
 const Login: NextPage = () => {
   const { data, refetch } = useQuery({ queryKey: ['/auth/me'] });
@@ -16,6 +16,13 @@ const Login: NextPage = () => {
     // })
     // const data = await res.json();
     removeTokens()
+    refetch();
+  }
+
+  const refresh = async() => {
+    const res = await fetcher('http://localhost:4000/auth/refresh');
+    const data = await res.json();
+    setTokens(data);
     refetch();
   }
 
@@ -34,6 +41,9 @@ const Login: NextPage = () => {
             </code>
             <button type="button" onClick={() => logout()}>
               Logout
+            </button>
+            <button type="button" onClick={() => refresh()}>
+              Refresh
             </button>
           </div>
         )}
