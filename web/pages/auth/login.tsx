@@ -15,11 +15,10 @@ const Login: NextPage = () => {
 
   const login = useMutation({
     mutationFn: async(credentials: typeof form) => {
-      const res = await fetcher(`http://localhost:4000/auth/login`, {
+      const data = await fetcher(`http://localhost:4000/auth/login`, {
         method: "POST",
         body: JSON.stringify(credentials)
       });
-      const data = await res.json();
       setTokens(data);
       return data;
     }

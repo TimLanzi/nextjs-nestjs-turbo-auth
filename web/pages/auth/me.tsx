@@ -19,12 +19,11 @@ const Login: NextPage = () => {
     refetch();
   }
 
-  const refresh = async() => {
-    const res = await fetcher('http://localhost:4000/auth/refresh');
-    const data = await res.json();
-    setTokens(data);
-    refetch();
-  }
+  // const refresh = async() => {
+  //   const data = await fetcher('http://localhost:4000/auth/refresh');
+  //   setTokens(data);
+  //   refetch();
+  // }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-2">
@@ -42,9 +41,9 @@ const Login: NextPage = () => {
             <button type="button" onClick={() => logout()}>
               Logout
             </button>
-            <button type="button" onClick={() => refresh()}>
+            {/* <button type="button" onClick={() => refresh()}>
               Refresh
-            </button>
+            </button> */}
           </div>
         )}
       </main>
