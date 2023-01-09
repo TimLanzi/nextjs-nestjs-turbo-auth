@@ -6,32 +6,34 @@ import { CreateNewUserDto } from './dtos/create-new-user.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+  ) {}
 
-  async findById(id: number) {
+  public async findById(id: number) {
     return this.prisma.user.findUnique({
       where: { id },
     });
   }
 
-  async findByIdWithTokens(id: number) {
+  public async findByIdWithTokens(id: number) {
     return this.prisma.user.findUnique({
       where: { id },
       include: { refresh_tokens: true },
     });
   }
 
-  async findByEmail(email: string): Promise<User | null> {
+  public async findByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findFirst({
       where: { email },
     });
   }
 
-  async createNewUser(data: CreateNewUserDto) {
+  public async createNewUser(data: CreateNewUserDto) {
     return this.prisma.user.create({ data });
   }
 
-  async updateRefreshTokenById(
+  public async updateRefreshTokenById(
     userId: number,
     token: string,
     expires: number,
@@ -74,7 +76,7 @@ export class UserService {
     });
   }
 
-  async deleteRefreshToken(token: string) {
+  public async deleteRefreshToken(token: string) {
     try {
       await this.prisma.refreshToken.delete({
         where: { token },
@@ -84,11 +86,17 @@ export class UserService {
     }
   }
 
+  public async deleteAllRefreshTokens(userId: number) {
+    await this.prisma.refreshToken.deleteMany({
+      where: { userId },
+    });
+  }
+
   // Delete expired refresh tokens once every hour
   @Cron('0 * * * *', {
     name: 'CLEAN_REFRESH_TOKENS'
   })
-  async cleanRefreshTokens() {
+  public async cleanRefreshTokens() {
     this.prisma.refreshToken.deleteMany({
       where: {
         expires_at: { lte: new Date() },

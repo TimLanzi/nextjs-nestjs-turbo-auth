@@ -1,24 +1,21 @@
-import { Injectable, BadRequestException, NotFoundException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { User } from '@prisma/client';
 import * as argon2 from "argon2";
-import { PrismaService } from 'src/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
 import { JWTPayload } from './types/jwt-payload.type';
-import { RefreshUser } from './types/refresh-user.type';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private configService: ConfigService,
-    private userService: UserService,
-    private jwtService: JwtService,
+    private readonly configService: ConfigService,
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
   ) {}
 
-  async validateUser(data: LoginDto): Promise<any> {
+  public async validateUser(data: LoginDto): Promise<any> {
     const user = await this.userService.findByEmail(data.email);
     if (!user) {
       throw new NotFoundException("User does not exist");
@@ -32,7 +29,7 @@ export class AuthService {
     return result;
   }
 
-  async register(data: RegisterDto) {
+  public async register(data: RegisterDto) {
     const exists = await this.userService.findByEmail(data.email);
 
     if (exists) {
@@ -54,7 +51,7 @@ export class AuthService {
     };
   }
   
-  async login(data: LoginDto) {
+  public async login(data: LoginDto) {
     const user = await this.validateUser(data);
 
     const { accessToken, refreshToken, refreshTokenExpires } = await this.getTokens({ sub: user.id, email: user.email });
@@ -66,11 +63,11 @@ export class AuthService {
     };
   }
 
-  async logout(token: string) {
+  public async logout(token: string) {
     await this.userService.deleteRefreshToken(token);
   }
 
-  async getTokens(payload: JWTPayload) {
+  private async getTokens(payload: JWTPayload) {
     // 30 days in seconds
     const refreshTokenExpires = Math.floor((Date.now() / 1000) + (60 * 60 * 24 * 30));
 
@@ -93,7 +90,7 @@ export class AuthService {
     };
   }
 
-  async refreshTokens(userId: number, refreshToken: string) {
+  public async refreshTokens(userId: number, refreshToken: string) {
     const user = await this.userService.findByIdWithTokens(userId);
     if (!user || user.refresh_tokens?.length <= 0) {
       throw new ForbiddenException("Access denied");
@@ -101,6 +98,14 @@ export class AuthService {
 
     const foundToken = user.refresh_tokens.find(t => t.token === refreshToken);
     if (!foundToken || foundToken.expires_at < new Date()) {
+      const payload: JWTPayload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.configService.get('REFRESH_TOKEN_SECRET'),
+      });
+      
+      await this.userService.deleteAllRefreshTokens(payload.sub);
+
+      // TODO log security alert
+
       throw new ForbiddenException("Access denied");
     }
 
