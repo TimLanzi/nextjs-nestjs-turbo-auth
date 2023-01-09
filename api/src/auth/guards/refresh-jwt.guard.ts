@@ -10,8 +10,7 @@ export class RefreshAuthGuard extends AuthGuard('refresh-jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest(err, user, info) {
-    console.log({info, err})
+  handleRequest(err, user, _info) {
     if (err || !user) {
       throw new UnauthorizedException('RefreshTokenError');
     }

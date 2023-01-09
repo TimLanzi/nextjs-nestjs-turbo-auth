@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { Prisma, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { CreateNewUserDto } from './dtos/create-new-user.dto';
@@ -73,5 +74,15 @@ export class UserService {
     //     expires_at: new Date(expires * 1000)
     //   }
     // });
+  }
+
+  // Delete expired refresh tokens once every hour
+  @Cron('* * */1 * * *')
+  async cleanRefreshTokens() {
+    this.prisma.refreshToken.deleteMany({
+      where: {
+        expires_at: { lte: new Date() },
+      },
+    });
   }
 }
