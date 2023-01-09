@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { Prisma, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { CreateNewUserDto } from './dtos/create-new-user.dto';
 
@@ -31,53 +31,63 @@ export class UserService {
     return this.prisma.user.create({ data });
   }
 
-  async updateRefreshTokenById(userId: number, token: string, expires: number, oldToken?: string) {
-    // await this.prisma.user.update({
-    //   where: { id },
-    //   data: { refreshToken: token },
-    // });
-
+  async updateRefreshTokenById(
+    userId: number,
+    token: string,
+    expires: number,
+    oldToken?: string,
+  ) {
     // convert number of seconds to date object
     const expires_at = new Date(expires * 1000);
 
-    if (oldToken) {
-      await this.prisma.refreshToken.update({
-        where: { token: oldToken },
-        data: {
-          token,
-          expires_at,
-        },
-      });
-    } else {
-      await this.prisma.refreshToken.create({
-        data: {
-          userId,
-          token,
-          expires_at,
-        },
-      });
-    }
+    // if (oldToken) {
+    //   await this.prisma.refreshToken.update({
+    //     where: { token: oldToken },
+    //     data: {
+    //       token,
+    //       expires_at,
+    //     },
+    //   });
+    // } else {
+    //   await this.prisma.refreshToken.create({
+    //     data: {
+    //       userId,
+    //       token,
+    //       expires_at,
+    //     },
+    //   });
+    // }
 
-    // await this.prisma.refreshToken.upsert({
-    //   where: {
-    //     token: oldToken,
-    //   },
-    //   create: {
-    //     userId,
-    //     token,
-    //     // convert number of seconds to date object
-    //     expires_at: new Date(expires * 1000)
-    //   },
-    //   update: {
-    //     token,
-    //     // convert number of seconds to date object
-    //     expires_at: new Date(expires * 1000)
-    //   }
-    // });
+    await this.prisma.refreshToken.upsert({
+      where: {
+        token: oldToken  || '',
+      },
+      create: {
+        userId,
+        token,
+        expires_at,
+      },
+      update: {
+        token,
+        expires_at,
+      },
+    });
+  }
+
+  async deleteRefreshToken(token: string) {
+    try {
+      await this.prisma.refreshToken.delete({
+        where: { token },
+      });
+    } catch(e) {
+      throw new BadRequestException("Error logging out");
+    }
   }
 
   // Delete expired refresh tokens once every hour
-  @Cron('* * */1 * * *')
+  @Cron('0 * * * *', {
+    name: 'CLEAN_REFRESH_TOKENS'
+  })
   async cleanRefreshTokens() {
     this.prisma.refreshToken.deleteMany({
       where: {

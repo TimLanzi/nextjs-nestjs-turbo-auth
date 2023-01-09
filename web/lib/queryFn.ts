@@ -1,7 +1,7 @@
 import { QueryFunction } from "@tanstack/react-query"
 import { getTokens, removeTokens, setTokens } from "./tokenStore";
 
-const baseUrl = `http://localhost:4000`;
+export const baseUrl = `http://localhost:4000`;
 
 
 // Wrapper for fetcher function to be used for react-query
@@ -21,6 +21,7 @@ export const fetcher = async(url: string, options?: RequestInit | undefined) => 
     ...options,
     headers: {
       'X-Access-Token': `Bearer ${tokens.accessToken}`,
+      'X-Refresh-Token': `Bearer ${tokens.refreshToken}`,
       ...options?.headers,
     },
   });
@@ -41,6 +42,7 @@ export const fetcher = async(url: string, options?: RequestInit | undefined) => 
       ...options,
       headers: {
         'X-Access-Token': `Bearer ${newTokens.accessToken}`,
+        'X-Refresh-Token': `Bearer ${newTokens.refreshToken}`,
         ...options?.headers,
       },
     });

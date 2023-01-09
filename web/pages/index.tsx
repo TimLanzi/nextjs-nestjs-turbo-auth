@@ -57,15 +57,15 @@ const Home: NextPage = () => {
             </p>
           </Link>
 
-          {/* <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+          <Link
+            href="/auth/admin"
             className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
           >
-            <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
+            <h3 className="text-2xl font-bold">Check Admin &rarr;</h3>
             <p className="mt-4 text-xl">
-              Instantly deploy your Next.js site to a public URL with Vercel.
+              Check if you're an admin
             </p>
-          </a> */}
+          </Link>
         </div>
       </main>
 

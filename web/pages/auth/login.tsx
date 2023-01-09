@@ -1,8 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import type { NextPage } from 'next'
-import cookies from "js-cookie"
 import Head from 'next/head'
-import Image from 'next/image'
 import { FormEventHandler, useState } from 'react'
 import { fetcher } from '../../lib/queryFn'
 import { setTokens } from '../../lib/tokenStore'

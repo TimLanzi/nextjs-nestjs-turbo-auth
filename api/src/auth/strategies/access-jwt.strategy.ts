@@ -1,13 +1,17 @@
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
-import { JWTPayload } from '../types/jwt-payload.type';
-import { Request } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { User } from '@prisma/client';
+import { Request } from 'express';
+import { PrismaService } from 'src/prisma.service';
+import { JWTPayload } from '../types/jwt-payload.type';
+import { CurrentUser } from '../types/current-user.type';
 
 @Injectable()
 export class AccessJwtStrategy extends PassportStrategy(Strategy, 'access-jwt') {
   constructor(
+    private prisma: PrismaService,
     protected configService: ConfigService,
   ) {
     super({
@@ -20,8 +24,22 @@ export class AccessJwtStrategy extends PassportStrategy(Strategy, 'access-jwt') 
     });
   }
 
-  async validate(payload: JWTPayload) {
-    return { id: payload.sub, email: payload.email };
+  async validate(payload: JWTPayload): Promise<CurrentUser> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        password: false,
+      },
+    });
+    if (!user) {
+      throw new ForbiddenException();
+    }
+
+    return user;
   }
 
   private static extractJwtFromCookies(req: Request): string | null {

@@ -1,13 +1,14 @@
 import { Injectable, BadRequestException, NotFoundException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
-import * as argon2 from "argon2";
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { User } from '@prisma/client';
+import * as argon2 from "argon2";
+import { PrismaService } from 'src/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { RegisterDto } from './dtos/register.dto';
-import { JWTPayload } from './types/jwt-payload.type';
-import { PrismaService } from 'src/prisma.service';
 import { LoginDto } from './dtos/login.dto';
-import { ConfigService } from '@nestjs/config';
+import { JWTPayload } from './types/jwt-payload.type';
+import { RefreshUser } from './types/refresh-user.type';
 
 @Injectable()
 export class AuthService {
@@ -65,13 +66,17 @@ export class AuthService {
     };
   }
 
+  async logout(token: string) {
+    await this.userService.deleteRefreshToken(token);
+  }
+
   async getTokens(payload: JWTPayload) {
     // 30 days in seconds
     const refreshTokenExpires = Math.floor((Date.now() / 1000) + (60 * 60 * 24 * 30));
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
-        expiresIn: '15m',
+        expiresIn: '5m',
         secret: this.configService.get('ACCESS_TOKEN_SECRET'),
       }),
 

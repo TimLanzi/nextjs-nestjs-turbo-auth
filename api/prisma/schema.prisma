@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -15,7 +15,14 @@ model User {
   email          String         @unique
   password       String
   name           String?
+  role           Role           @default(USER)
   refresh_tokens RefreshToken[]
+}
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
 }
 
 model RefreshToken {

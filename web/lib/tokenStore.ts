@@ -22,7 +22,7 @@ export const setTokens = (tokens: { access_token: string, refresh_token: string 
   cookies.set(accessTokenKey, tokens.access_token, {
     sameSite: 'strict',
     // 15 minutes
-    expires: 1 / 24 * 0.25
+    expires: 1 / 24 / 60 * 5
   });
   cookies.set(refreshTokenKey, tokens.refresh_token, {
     sameSite: 'strict',
