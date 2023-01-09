@@ -1,13 +1,14 @@
+import { useQuery } from '@tanstack/react-query'
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import { useSession } from '../../hooks/useSession'
+import { useRedirect } from '../../hooks/useRedirect';
 
-const Session: NextPage = () => {
-  const { data, error, status, logout } = useSession();
+const Admin: NextPage = () => {
+  const { data, status } = useQuery({ queryKey: ['/user/moderator'] });
 
-  const handleLogout = async() => {
-    await logout();
-  }
+  useRedirect('/', () => {
+    return status === 'error'
+  }, [status]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-2">
@@ -20,22 +21,14 @@ const Session: NextPage = () => {
         { !!data && (
           <div className='mb-5'>
             <code className="rounded-md bg-gray-100 p-3 font-mono">
-              {JSON.stringify({status, ...data})}
+              {JSON.stringify(data)}
             </code>
-            <button type="button" onClick={() => handleLogout()}>
+            {/* <button type="button" onClick={() => logout()}>
               Logout
-            </button>
+            </button> */}
             {/* <button type="button" onClick={() => refresh()}>
               Refresh
             </button> */}
-          </div>
-        )}
-        { !!error && (
-          <div className='mb-5'>
-            <code className="rounded-md bg-gray-100 p-3 font-mono">
-              Error:
-              {JSON.stringify({status, message: error.message})}
-            </code>
           </div>
         )}
       </main>
@@ -43,4 +36,4 @@ const Session: NextPage = () => {
   )
 }
 
-export default Session
+export default Admin

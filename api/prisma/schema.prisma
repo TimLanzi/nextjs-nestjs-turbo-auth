@@ -11,7 +11,7 @@ datasource db {
 }
 
 model User {
-  id             Int            @id @default(autoincrement())
+  id             String         @id @default(uuid())
   email          String         @unique
   password       String
   name           String?
@@ -28,6 +28,6 @@ enum Role {
 model RefreshToken {
   token      String   @id @unique
   expires_at DateTime
-  userId     Int
+  userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

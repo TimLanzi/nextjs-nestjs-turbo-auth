@@ -6,7 +6,7 @@ import { User } from '@prisma/client';
 import { Request } from 'express';
 import { PrismaService } from 'src/prisma.service';
 import { JWTPayload } from '../types/jwt-payload.type';
-import { CurrentUser } from '../types/current-user.type';
+import { type ICurrentUser } from '../types/current-user.type';
 
 @Injectable()
 export class AccessJwtStrategy extends PassportStrategy(Strategy, 'access-jwt') {
@@ -24,7 +24,7 @@ export class AccessJwtStrategy extends PassportStrategy(Strategy, 'access-jwt') 
     });
   }
 
-  async validate(payload: JWTPayload): Promise<CurrentUser> {
+  async validate(payload: JWTPayload): Promise<ICurrentUser> {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
       select: {

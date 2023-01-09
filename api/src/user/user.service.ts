@@ -10,13 +10,13 @@ export class UserService {
     private prisma: PrismaService,
   ) {}
 
-  public async findById(id: number) {
+  public async findById(id: string) {
     return this.prisma.user.findUnique({
       where: { id },
     });
   }
 
-  public async findByIdWithTokens(id: number) {
+  public async findByIdWithTokens(id: string) {
     return this.prisma.user.findUnique({
       where: { id },
       include: { refresh_tokens: true },
@@ -34,7 +34,7 @@ export class UserService {
   }
 
   public async updateRefreshTokenById(
-    userId: number,
+    userId: string,
     token: string,
     expires: number,
     oldToken?: string,
@@ -42,38 +42,38 @@ export class UserService {
     // convert number of seconds to date object
     const expires_at = new Date(expires * 1000);
 
-    // if (oldToken) {
-    //   await this.prisma.refreshToken.update({
-    //     where: { token: oldToken },
-    //     data: {
-    //       token,
-    //       expires_at,
-    //     },
-    //   });
-    // } else {
-    //   await this.prisma.refreshToken.create({
-    //     data: {
-    //       userId,
-    //       token,
-    //       expires_at,
-    //     },
-    //   });
-    // }
+    if (oldToken) {
+      await this.prisma.refreshToken.update({
+        where: { token: oldToken },
+        data: {
+          token,
+          expires_at,
+        },
+      });
+    } else {
+      await this.prisma.refreshToken.create({
+        data: {
+          userId,
+          token,
+          expires_at,
+        },
+      });
+    }
 
-    await this.prisma.refreshToken.upsert({
-      where: {
-        token: oldToken  || '',
-      },
-      create: {
-        userId,
-        token,
-        expires_at,
-      },
-      update: {
-        token,
-        expires_at,
-      },
-    });
+    // await this.prisma.refreshToken.upsert({
+    //   where: {
+    //     token: oldToken  || '',
+    //   },
+    //   create: {
+    //     userId,
+    //     token,
+    //     expires_at,
+    //   },
+    //   update: {
+    //     token,
+    //     expires_at,
+    //   },
+    // });
   }
 
   public async deleteRefreshToken(token: string) {
@@ -86,7 +86,7 @@ export class UserService {
     }
   }
 
-  public async deleteAllRefreshTokens(userId: number) {
+  public async deleteAllRefreshTokens(userId: string) {
     await this.prisma.refreshToken.deleteMany({
       where: { userId },
     });

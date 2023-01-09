@@ -1,4 +1,4 @@
 export type JWTPayload = {
-  sub: number;
+  sub: string;
   email: string;
 }

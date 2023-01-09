@@ -1,13 +1,14 @@
-import { Body, Controller, Get, Post, Request, UseGuards, Res } from '@nestjs/common';
-import { Response } from "express";
+import { Body, Controller, Get, Post, UseGuards, Res } from '@nestjs/common';
+// import { Response } from "express";
 import { AuthService } from './auth.service';
+import { Auth } from './decorators/auth.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { LoginDto } from './dtos/login.dto';
 import { RegisterDto } from './dtos/register.dto';
 import { AccessAuthGuard } from './guards/access-jwt.guard';
 import { RefreshAuthGuard } from './guards/refresh-jwt.guard';
-import { type CurrentUser as ICurrentUser } from './types/current-user.type';
-import { RefreshUser } from './types/refresh-user.type';
+import { type ICurrentUser } from './types/current-user.type';
+import { type RefreshUser } from './types/refresh-user.type';
 
 @Controller('auth')
 export class AuthController {
@@ -49,7 +50,7 @@ export class AuthController {
     return { message: "Logout successful" };
   }
 
-  @UseGuards(AccessAuthGuard)
+  @Auth()
   @Get('me')
   async getCurrentUser(
     @CurrentUser() user: ICurrentUser

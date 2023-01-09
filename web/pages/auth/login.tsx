@@ -2,14 +2,18 @@ import { useMutation } from '@tanstack/react-query'
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { FormEventHandler, useState } from 'react'
+import { useRedirect } from '../../hooks/useRedirect'
+import { useSession } from '../../hooks/useSession'
 import { fetcher } from '../../lib/queryFn'
 import { setTokens } from '../../lib/tokenStore'
 
 const Login: NextPage = () => {
+  const { status, data } = useSession();
+
   const [form, setForm] = useState({
     email: '',
     password: '',
-  })
+  });
 
   const login = useMutation({
     mutationFn: async(credentials: typeof form) => {
@@ -20,6 +24,12 @@ const Login: NextPage = () => {
       setTokens(data);
       return data;
     }
+  });
+
+  useRedirect('/auth/me', () => {
+    return !!data || !!login.data
+  }, [data, login], {
+    enabled: status === 'success',
   });
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = (e) => {

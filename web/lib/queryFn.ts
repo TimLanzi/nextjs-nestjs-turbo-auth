@@ -31,10 +31,9 @@ export const fetcher = async(url: string, options?: RequestInit | undefined) => 
   if (!res.ok && data.message === 'AccessTokenError') {
     // If request fails, attempt to refresh token
     const newTokens = await refreshToken(tokens.refreshToken);
-
     // Return initial request data if refresh fails
     if (!newTokens) {
-      return data;
+      throw new Error(data.message || data.error);
     }
 
     // Make second attempt at request with updated access token
@@ -46,9 +45,15 @@ export const fetcher = async(url: string, options?: RequestInit | undefined) => 
         ...options?.headers,
       },
     });
-
     data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || data.error);
+    }
     return data;
+  }
+
+  if (!res.ok) {
+    throw new Error(data.message || data.error);
   }
 
   return data;

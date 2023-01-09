@@ -66,6 +66,16 @@ const Home: NextPage = () => {
               Check if you're an admin
             </p>
           </Link>
+
+          <Link
+            href="/auth/moderator"
+            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
+          >
+            <h3 className="text-2xl font-bold">Check Moderator &rarr;</h3>
+            <p className="mt-4 text-xl">
+              Check if you're a moderator
+            </p>
+          </Link>
         </div>
       </main>
 

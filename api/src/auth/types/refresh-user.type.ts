@@ -1,5 +1,5 @@
 export type RefreshUser = {
-  id: number;
+  id: string;
   email: string;
   refreshToken: string;
 }
