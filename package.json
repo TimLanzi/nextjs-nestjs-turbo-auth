@@ -1,0 +1,17 @@
+{
+  "name": "auth-tests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "dev": "turbo run dev start:dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "turbo": "^1.6.3"
+  }
+}
