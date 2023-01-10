@@ -7,8 +7,8 @@ const client = new QueryClient({
   defaultOptions: {
     queries: {
       queryFn: defaultQueryFn
-    }
-  }
+    },
+  },
 });
 
 function MyApp({ Component, pageProps }: AppProps) {

@@ -10,7 +10,7 @@ const defaultOptions: Options = {
 }
 
 export const useRedirect = (
-  url: string,
+  url: string | undefined,  // only have undefined for typechecking edgecases
   shouldRedirect: (() => boolean) | (() => Promise<boolean>),
   deps: DependencyList,
   options?: Options,
@@ -28,7 +28,7 @@ export const useRedirect = (
 
   useEffect(() => {
     async function redirect() {
-      if (!!(await callback())) {
+      if (url && !!(await callback())) {
         console.log(`redirecting to ${url}`)
         router.replace(url);
       }

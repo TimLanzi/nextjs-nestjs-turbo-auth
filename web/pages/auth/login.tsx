@@ -5,10 +5,11 @@ import { FormEventHandler, useState } from 'react'
 import { useRedirect } from '../../hooks/useRedirect'
 import { useSession } from '../../hooks/useSession'
 import { fetcher } from '../../lib/queryFn'
-import { setTokens } from '../../lib/tokenStore'
+import { useTokenStore } from '../../store/tokenStore'
 
 const Login: NextPage = () => {
   const { status, data } = useSession();
+  const setTokens = useTokenStore(s => s.setTokens);
 
   const [form, setForm] = useState({
     email: '',
@@ -17,12 +18,13 @@ const Login: NextPage = () => {
 
   const login = useMutation({
     mutationFn: async(credentials: typeof form) => {
-      const data = await fetcher(`http://localhost:4000/auth/login`, {
-        method: "POST",
-        body: JSON.stringify(credentials)
-      });
-      setTokens(data);
-      return data;
+        const data = await fetcher(`http://localhost:4000/auth/login`, {
+          method: "POST",
+          body: credentials,
+        });
+        
+        setTokens(data);
+        return data;
     }
   });
 
@@ -49,6 +51,14 @@ const Login: NextPage = () => {
           <div className='mb-5'>
             <code className="rounded-md bg-gray-100 p-3 font-mono">
               {JSON.stringify(login.data)}
+            </code>
+          </div>
+        )}
+
+        { login.error && (
+          <div className='mb-5'>
+            <code className="rounded-md bg-gray-100 p-1 font-mono text-red-600">
+              {JSON.stringify(login.error)}
             </code>
           </div>
         )}

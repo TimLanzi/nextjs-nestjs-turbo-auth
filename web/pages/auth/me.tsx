@@ -3,7 +3,7 @@ import Head from 'next/head'
 import { useSession } from '../../hooks/useSession'
 
 const Session: NextPage = () => {
-  const { data, error, status, logout } = useSession();
+  const { data, error, logout } = useSession({ redirectTo: '/auth/login' });
 
   const handleLogout = async() => {
     await logout();
@@ -20,21 +20,17 @@ const Session: NextPage = () => {
         { !!data && (
           <div className='mb-5'>
             <code className="rounded-md bg-gray-100 p-3 font-mono">
-              {JSON.stringify({status, ...data})}
+              {JSON.stringify({...data})}
             </code>
             <button type="button" onClick={() => handleLogout()}>
               Logout
             </button>
-            {/* <button type="button" onClick={() => refresh()}>
-              Refresh
-            </button> */}
           </div>
         )}
         { !!error && (
           <div className='mb-5'>
-            <code className="rounded-md bg-gray-100 p-3 font-mono">
-              Error:
-              {JSON.stringify({status, message: error.message})}
+            <code className="rounded-md bg-gray-100 p-3 font-mono text-red-600">
+              {JSON.stringify({message: error.message})}
             </code>
           </div>
         )}

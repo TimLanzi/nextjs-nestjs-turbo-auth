@@ -5,11 +5,12 @@ import { FormEventHandler, useState } from 'react'
 import { useRedirect } from '../../hooks/useRedirect'
 import { useSession } from '../../hooks/useSession'
 import { fetcher } from '../../lib/queryFn'
-import { setTokens } from '../../lib/tokenStore'
+import { useTokenStore } from '../../store/tokenStore'
 
 const Register: NextPage = () => {
   const { status, data } = useSession();
-  
+  const setTokens = useTokenStore(s => s.setTokens);
+
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -25,7 +26,7 @@ const Register: NextPage = () => {
     mutationFn: async(credentials: typeof form) => {
       const data = await fetcher(`http://localhost:4000/auth/register`, {
         method: "POST",
-        body: JSON.stringify(credentials)
+        body: credentials,
       });
       setTokens(data);
       return data;

@@ -2,8 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useRedirect } from '../../hooks/useRedirect';
+import { useSession } from '../../hooks/useSession';
 
 const Admin: NextPage = () => {
+  useSession({ redirectTo: '/auth/login' });
   const { data, status } = useQuery({ queryKey: ['/user/moderator'] });
 
   useRedirect('/', () => {

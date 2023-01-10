@@ -1,8 +1,11 @@
 import { QueryFunction } from "@tanstack/react-query"
-import { getTokens, removeTokens, setTokens } from "./tokenStore";
+import { useTokenStore } from "../store/tokenStore";
 
 export const baseUrl = `http://localhost:4000`;
 
+interface AppRequestInit extends RequestInit {
+  body?: any | undefined;
+}
 
 // Wrapper for fetcher function to be used for react-query
 export const defaultQueryFn: QueryFunction = async({ queryKey }) => {
@@ -13,8 +16,8 @@ export const defaultQueryFn: QueryFunction = async({ queryKey }) => {
 }
 
 // Wrapper for fetcheRequest function that implements refresh token attempt
-export const fetcher = async(url: string, options?: RequestInit | undefined) => {
-  const tokens = getTokens();
+export const fetcher = async(url: string, options?: AppRequestInit | undefined) => {
+  const tokens = useTokenStore.getState()
 
   // Make initial request
   let res = await fetchRequest(url, {
@@ -26,41 +29,44 @@ export const fetcher = async(url: string, options?: RequestInit | undefined) => 
     },
   });
 
-  let data = await res.json();
-
-  if (!res.ok && data.message === 'AccessTokenError') {
-    // If request fails, attempt to refresh token
-    const newTokens = await refreshToken(tokens.refreshToken);
-    // Return initial request data if refresh fails
-    if (!newTokens) {
-      throw new Error(data.message || data.error);
-    }
-
-    // Make second attempt at request with updated access token
-    res = await fetchRequest(url, {
-      ...options,
-      headers: {
-        'X-Access-Token': `Bearer ${newTokens.accessToken}`,
-        'X-Refresh-Token': `Bearer ${newTokens.refreshToken}`,
-        ...options?.headers,
-      },
-    });
-    data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.message || data.error);
-    }
-    return data;
-  }
-
   if (!res.ok) {
-    throw new Error(data.message || data.error);
+    let data = await res.json();
+    if (data.message === 'AccessTokenError') {
+      // If request fails, attempt to refresh token
+      const newTokens = await refreshToken(tokens.refreshToken);
+      // Return initial request data if refresh fails
+      if (!newTokens) {
+        throw { message: data.message || data.error };
+      }
+  
+      // Make second attempt at request with updated access token
+      res = await fetchRequest(url, {
+        ...options,
+        headers: {
+          'X-Access-Token': `Bearer ${newTokens.accessToken}`,
+          'X-Refresh-Token': `Bearer ${newTokens.refreshToken}`,
+          ...options?.headers,
+        },
+      });
+      data = await res.json();
+    
+      if (!res.ok) {
+        throw { message: data.message || data.error };
+      }
+      return data;
+    }
+    throw { message: data.message || data.error };
   }
 
+  let data = await res.json();
   return data;
 }
 
 // Wrapper of fetch function with application/json set by default
-const fetchRequest = async(url: string, options?: RequestInit | undefined) => {
+const fetchRequest = async(url: string, options?: AppRequestInit | undefined) => {
+  if (options?.body) {
+    options.body = JSON.stringify(options.body);
+  }
   return fetch(url, {
     ...options,
     // credentials: "include",
@@ -73,6 +79,7 @@ const fetchRequest = async(url: string, options?: RequestInit | undefined) => {
 
 // Refreshes tokens
 const refreshToken = async(refreshToken: string) => {
+  const { removeTokens, setTokens } = useTokenStore.getState();
   const res = await fetch(`${baseUrl}/auth/refresh`, {
     headers: {
       'Content-Type': 'application/json',

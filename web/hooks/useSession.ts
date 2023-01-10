@@ -1,9 +1,8 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { isLoggedIn } from "../lib/isLoggedIn";
+import { useRouter } from "next/router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { baseUrl, fetcher } from "../lib/queryFn";
-import { removeTokens } from "../lib/tokenStore"
+import { useTokenStore } from "../store/tokenStore";
 import { useRedirect } from "./useRedirect";
 
 type SessionUser = {
@@ -17,23 +16,32 @@ type Error = {
   message: string;
 }
 
-export const useSession = () => {
+type Options = {
+  redirectTo?: string;
+}
+
+export const useSession = (options?: Options) => {
   const router = useRouter();
   const client = useQueryClient();
+  const [isLoggedIn, removeTokens] = useTokenStore(s => [
+    !!(s.accessToken || s.refreshToken),
+    s.removeTokens
+  ]);
   const { data, status, remove, refetch, ...rest } = useQuery<SessionUser, Error>({
     queryKey: ['/auth/me'],
-    enabled: isLoggedIn(),
+    // enabled: isLoggedIn,
   });
 
+  // Redirect away from page if user is not logged in and there is a redirect path
   useEffect(() => {
-    if (!isLoggedIn()) {
-      router.replace('/auth/login');
+    if (!isLoggedIn && options?.redirectTo) {
+      router.replace(options?.redirectTo);
     }
   }, []);
 
-  // Redirect to login page if session fetch throws error, or there is no data after fetching
-  useRedirect('/auth/login', () => {
-    return status === 'error' || (status !== 'loading' && !data)
+  // Redirect away from if there is a redirect path provided and session fetch throws error/there is no data after fetching
+  useRedirect(options?.redirectTo, () => {
+    return !!options?.redirectTo && (status === 'error' || (status !== 'loading' && !data))
   }, [status, data]);
 
   const logout = async() => {

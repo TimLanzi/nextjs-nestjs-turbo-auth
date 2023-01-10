@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as argon2 from "argon2";
@@ -18,7 +18,7 @@ export class AuthService {
   public async validateUser(data: LoginDto): Promise<any> {
     const user = await this.userService.findByEmail(data.email);
     if (!user) {
-      throw new NotFoundException("User does not exist");
+      throw new BadRequestException("User does not exist");
     }
 
     if (!(await argon2.verify(user.password, data.password))) {
