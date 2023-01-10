@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { User } from '@prisma/client';
+import { User } from '@acme/db';
 import { PrismaService } from 'src/prisma.service';
 import { CreateNewUserDto } from './dtos/create-new-user.dto';
 

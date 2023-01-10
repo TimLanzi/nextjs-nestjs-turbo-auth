@@ -1,5 +1,5 @@
 import { applyDecorators, UseGuards } from "@nestjs/common";
-import { Role } from "@prisma/client";
+import { Role } from "@acme/db";
 import { AccessAuthGuard } from "../guards/access-jwt.guard";
 import { RolesGuard } from "../guards/roles.guard";
 import { Roles } from "./roles.decorator";

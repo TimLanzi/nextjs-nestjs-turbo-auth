@@ -1,17 +1,28 @@
 {
   "name": "auth-tests",
+  "workspaces": {
+    "packages": [
+      "apps/**",
+      "packages/**"
+    ]
+  },
+  "private": true,
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "build": "turbo run build",
-    "lint": "turbo run lint",
-    "dev": "turbo run dev start:dev"
+    "clean": "rimraf node_modules",
+    "clean:workspaces": "turbo clean",
+    "db:generate": "turbo db:generate",
+    "db:push": "turbo db:push",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "dev": "turbo dev start:dev db:studio --parallel"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "rimraf": "^3.0.2",
     "turbo": "^1.6.3"
   }
 }

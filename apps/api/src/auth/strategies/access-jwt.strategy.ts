@@ -2,7 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { User } from '@prisma/client';
+import { User } from '@acme/db';
 import { Request } from 'express';
 import { PrismaService } from 'src/prisma.service';
 import { JWTPayload } from '../types/jwt-payload.type';

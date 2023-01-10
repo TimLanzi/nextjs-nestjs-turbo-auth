@@ -1,3 +1,3 @@
-import { User } from "@prisma/client";
+import { User } from "@acme/db";
 
 export type ICurrentUser = Omit<User, 'password'>;
