@@ -24,7 +24,7 @@ export const useSession = (options?: Options) => {
   const router = useRouter();
   const client = useQueryClient();
   const [isLoggedIn, removeTokens] = useTokenStore(s => [
-    !!(s.accessToken || s.refreshToken),
+    !!(s.accessToken && s.refreshToken),
     s.removeTokens
   ]);
   const { data, status, remove, refetch, ...rest } = useQuery<SessionUser, Error>({

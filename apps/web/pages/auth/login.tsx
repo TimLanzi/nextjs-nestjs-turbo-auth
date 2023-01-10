@@ -4,7 +4,7 @@ import Head from 'next/head'
 import { FormEventHandler, useState } from 'react'
 import { useRedirect } from '../../hooks/useRedirect'
 import { useSession } from '../../hooks/useSession'
-import { fetcher } from '../../lib/queryFn'
+import { baseUrl, fetcher } from '../../lib/queryFn'
 import { useTokenStore } from '../../store/tokenStore'
 
 const Login: NextPage = () => {
@@ -18,7 +18,7 @@ const Login: NextPage = () => {
 
   const login = useMutation({
     mutationFn: async(credentials: typeof form) => {
-        const data = await fetcher(`http://localhost:4000/auth/login`, {
+        const data = await fetcher(`${baseUrl}/auth/login`, {
           method: "POST",
           body: credentials,
         });
