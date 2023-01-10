@@ -46,10 +46,10 @@ const Register: NextPage = () => {
       </Head>
 
       <main className="flex w-full flex-1 flex-col items-center justify-center px-20 text-center">
-        { register.data && (
+        { !!register.error && (
           <div className='mb-5'>
             <code className="rounded-md bg-gray-100 p-3 font-mono">
-              {JSON.stringify(register.data)}
+              {JSON.stringify(register.error)}
             </code>
           </div>
         )}

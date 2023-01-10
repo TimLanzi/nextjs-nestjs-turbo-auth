@@ -5,6 +5,8 @@ import { Auth } from './decorators/auth.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { LoginDto } from './dtos/login.dto';
 import { RegisterDto } from './dtos/register.dto';
+import { ResendVerificationEmailDto } from './dtos/resend-verification-email.dto';
+import { VerifyEmailDto } from './dtos/verify-email.dto';
 import { AccessAuthGuard } from './guards/access-jwt.guard';
 import { RefreshAuthGuard } from './guards/refresh-jwt.guard';
 import { type ICurrentUser } from './types/current-user.type';
@@ -55,7 +57,9 @@ export class AuthController {
   async getCurrentUser(
     @CurrentUser() user: ICurrentUser
   ) {
-    return user
+    // Strip stuff we don't want the frontend to see
+    const { email_verified, ...data } = user;
+    return data;
   }
 
   @UseGuards(RefreshAuthGuard)
@@ -67,5 +71,19 @@ export class AuthController {
     const refreshToken = user.refreshToken;
 
     return this.authService.refreshTokens(userId, refreshToken);
+  }
+
+  @Post('verify-email')
+  async verifyEmail(
+    @Body() data: VerifyEmailDto,
+  ) {
+    return this.authService.verifyEmail(data);
+  }
+
+  @Post('resend-verification-email')
+  async resendVerificationEmail(
+    @Body() data: ResendVerificationEmailDto,
+  ) {
+    return this.authService.resendVerificationEmail(data);
   }
 }

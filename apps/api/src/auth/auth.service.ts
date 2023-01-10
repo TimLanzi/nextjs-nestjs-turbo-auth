@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as argon2 from "argon2";
@@ -6,6 +6,10 @@ import { UserService } from 'src/user/user.service';
 import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
 import { JWTPayload } from './types/jwt-payload.type';
+import { VerifyEmailDto } from './dtos/verify-email.dto';
+import { ResendVerificationEmailDto } from './dtos/resend-verification-email.dto';
+import { generateVerifyToken } from 'src/util/generate-verify-token';
+import { User } from '@acme/db';
 
 @Injectable()
 export class AuthService {
@@ -15,7 +19,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  public async validateUser(data: LoginDto): Promise<any> {
+  public async validateUser(data: LoginDto): Promise<User> {
     const user = await this.userService.findByEmail(data.email);
     if (!user) {
       throw new BadRequestException("User does not exist");
@@ -25,8 +29,7 @@ export class AuthService {
       throw new BadRequestException("Invalid credentials");
     }
 
-    const { password, ...result } = user;
-    return result;
+    return user;
   }
 
   public async register(data: RegisterDto) {
@@ -37,22 +40,32 @@ export class AuthService {
     }
 
     const hash = await argon2.hash(data.password);
+    const verifyEmailToken = generateVerifyToken(2);
     const newUser = await this.userService.createNewUser({
       ...data,
       password: hash,
+      verify_email_token: verifyEmailToken.token,
+      verify_email_expires: verifyEmailToken.expiresIn,
     });
 
-    const { accessToken, refreshToken, refreshTokenExpires } = await this.getTokens({ sub: newUser.id, email: newUser.email });
-    await this.userService.updateRefreshTokenById(newUser.id, refreshToken, refreshTokenExpires);
+    // TODO send email with token
 
-    return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    };
+    return { id: newUser.id, email: newUser.email };
+    // const { accessToken, refreshToken, refreshTokenExpires } = await this.getTokens({ sub: newUser.id, email: newUser.email });
+    // await this.userService.updateRefreshTokenById(newUser.id, refreshToken, refreshTokenExpires);
+
+    // return {
+    //   access_token: accessToken,
+    //   refresh_token: refreshToken,
+    // };
   }
   
   public async login(data: LoginDto) {
     const user = await this.validateUser(data);
+
+    if (!user.email_verified) {
+      throw new UnauthorizedException("Email is not yet verified");
+    }
 
     const { accessToken, refreshToken, refreshTokenExpires } = await this.getTokens({ sub: user.id, email: user.email });
     await this.userService.updateRefreshTokenById(user.id, refreshToken, refreshTokenExpires);
@@ -67,27 +80,21 @@ export class AuthService {
     await this.userService.deleteRefreshToken(token);
   }
 
-  private async getTokens(payload: JWTPayload) {
-    // 30 days in seconds
-    const refreshTokenExpires = Math.floor((Date.now() / 1000) + (60 * 60 * 24 * 30));
+  public async verifyEmail(data: VerifyEmailDto) {
+    const user = await this.userService.checkVerifyTokenAndVerifyEmail(data.token);
+    // if (user) {
+    //   // TODO maybe send welcome message
+    // }
 
-    const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(payload, {
-        expiresIn: '5m',
-        secret: this.configService.get('ACCESS_TOKEN_SECRET'),
-      }),
+    return { id: user.id, email: user.email };
+  }
 
-      this.jwtService.signAsync(payload, {
-        expiresIn: refreshTokenExpires,
-        secret: this.configService.get('REFRESH_TOKEN_SECRET'),
-      }),
-    ]);
+  public async resendVerificationEmail(data: ResendVerificationEmailDto) {
+    const user = await this.userService.updateVerifyToken(data.email);
 
-    return {
-      accessToken,
-      refreshToken,
-      refreshTokenExpires,
-    };
+    // TODO send verification email
+
+    return { id: user.id, email: user.email };
   }
 
   public async refreshTokens(userId: string, refreshToken: string) {
@@ -115,6 +122,29 @@ export class AuthService {
     return {
       access_token: tokens.accessToken,
       refresh_token: tokens.refreshToken,
+    };
+  }
+
+  private async getTokens(payload: JWTPayload) {
+    // 30 days in seconds
+    const refreshTokenExpires = Math.floor((Date.now() / 1000) + (60 * 60 * 24 * 30));
+
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        expiresIn: '5m',
+        secret: this.configService.get('ACCESS_TOKEN_SECRET'),
+      }),
+
+      this.jwtService.signAsync(payload, {
+        expiresIn: refreshTokenExpires,
+        secret: this.configService.get('REFRESH_TOKEN_SECRET'),
+      }),
+    ]);
+
+    return {
+      accessToken,
+      refreshToken,
+      refreshTokenExpires,
     };
   }
 }

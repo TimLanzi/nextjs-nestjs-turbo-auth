@@ -31,3 +31,9 @@ yarn install
 ```
 yarn dev
 ```
+
+## Updating Prisma Schema
+Run the following:
+```
+yarn db:push db:generate
+```

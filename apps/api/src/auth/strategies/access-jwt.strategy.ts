@@ -25,6 +25,7 @@ export class AccessJwtStrategy extends PassportStrategy(Strategy, 'access-jwt') 
   }
 
   async validate(payload: JWTPayload): Promise<ICurrentUser> {
+    // Fetch only non-sensitive data
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
       select: {
@@ -32,12 +33,16 @@ export class AccessJwtStrategy extends PassportStrategy(Strategy, 'access-jwt') 
         email: true,
         name: true,
         role: true,
-        password: false,
+        email_verified: true,
       },
     });
     if (!user) {
       throw new ForbiddenException();
     }
+
+    // if (!user.email_verified) {
+    //   throw new ForbiddenException('Email has not been verified')
+    // }
 
     return user;
   }

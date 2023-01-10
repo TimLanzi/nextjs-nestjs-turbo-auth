@@ -3,6 +3,7 @@ import { Cron } from '@nestjs/schedule';
 import { User } from '@acme/db';
 import { PrismaService } from 'src/prisma.service';
 import { CreateNewUserDto } from './dtos/create-new-user.dto';
+import { generateVerifyToken } from 'src/util/generate-verify-token';
 
 @Injectable()
 export class UserService {
@@ -90,6 +91,48 @@ export class UserService {
     await this.prisma.refreshToken.deleteMany({
       where: { userId },
     });
+  }
+
+  public async checkVerifyTokenAndVerifyEmail(token: string) {
+    const exists = await this.prisma.user.findFirst({
+      where: {
+        verify_email_token: token,
+        verify_email_expires: { gte: new Date() },
+      },
+    });
+
+    if (!exists) {
+      throw new BadRequestException("Token is either invalid or expired");
+    }
+
+    const user = await this.prisma.user.update({
+      where: { id: exists.id },
+      data: {
+        email_verified: true,
+        verify_email_token: null,
+        verify_email_expires: null,
+      },
+    });
+
+    return user;
+  }
+
+  public async updateVerifyToken(email: string) {
+    const { token, expiresIn } = generateVerifyToken(2);
+    try {
+      const user = await this.prisma.user.update({
+        where: { email },
+        data: {
+          email_verified: false,
+          verify_email_token: token,
+          verify_email_expires: expiresIn,
+        },
+      });
+
+      return user;
+    } catch {
+      throw new BadRequestException("No user with that email could be found")
+    }
   }
 
   // Delete expired refresh tokens once every hour
