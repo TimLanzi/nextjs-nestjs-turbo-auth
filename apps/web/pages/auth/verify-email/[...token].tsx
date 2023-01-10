@@ -19,7 +19,8 @@ const VerifyEmail = () => {
 
   useEffect(() => {
     if (router.query.token && !sentRequest.current) {
-      const token = Array.isArray(router.query.token) ? router.query.token.join('') : router.query.token;
+      // base64 string token can include forward slashes. if this is the case, join token fragments with '/'
+      const token = Array.isArray(router.query.token) ? router.query.token.join('/') : router.query.token;
       verifyEmail.mutate(token);
       sentRequest.current = true;
     }
