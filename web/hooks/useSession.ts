@@ -29,7 +29,7 @@ export const useSession = (options?: Options) => {
   ]);
   const { data, status, remove, refetch, ...rest } = useQuery<SessionUser, Error>({
     queryKey: ['/auth/me'],
-    // enabled: isLoggedIn,
+    enabled: isLoggedIn,
   });
 
   // Redirect away from page if user is not logged in and there is a redirect path
