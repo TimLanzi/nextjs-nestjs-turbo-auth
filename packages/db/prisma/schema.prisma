@@ -11,15 +11,17 @@ datasource db {
 }
 
 model User {
-  id                   String         @id @default(uuid())
-  email                String         @unique
-  password             String
-  name                 String?
-  role                 Role           @default(USER)
-  refresh_tokens       RefreshToken[]
-  email_verified       Boolean        @default(false)
-  verify_email_token   String?
-  verify_email_expires DateTime?
+  id                     String         @id @default(uuid())
+  email                  String         @unique
+  password               String
+  name                   String?
+  role                   Role           @default(USER)
+  refresh_tokens         RefreshToken[]
+  email_verified         Boolean        @default(false)
+  verify_email_token     String?
+  verify_email_expires   DateTime?
+  password_reset_token   String?
+  password_reset_expires DateTime?
 }
 
 enum Role {

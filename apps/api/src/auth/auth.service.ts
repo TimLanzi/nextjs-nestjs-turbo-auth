@@ -10,6 +10,10 @@ import { VerifyEmailDto } from './dtos/verify-email.dto';
 import { ResendVerificationEmailDto } from './dtos/resend-verification-email.dto';
 import { generateVerifyToken } from 'src/util/generate-verify-token';
 import { User } from '@acme/db';
+import { BeginPasswordRecoveryDto } from './dtos/begin-password-recovery.dto';
+import { CheckPasswordRecoveryTokenDto } from './dtos/check-password-recovery-token.dto';
+import { LiteUser } from './types/lite-user.type';
+import { RecoverPasswordDto } from './dtos/recover-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -32,7 +36,7 @@ export class AuthService {
     return user;
   }
 
-  public async register(data: RegisterDto) {
+  public async register(data: RegisterDto): Promise<LiteUser> {
     const exists = await this.userService.findByEmail(data.email);
 
     if (exists) {
@@ -80,7 +84,7 @@ export class AuthService {
     await this.userService.deleteRefreshToken(token);
   }
 
-  public async verifyEmail(data: VerifyEmailDto) {
+  public async verifyEmail(data: VerifyEmailDto): Promise<LiteUser> {
     const user = await this.userService.checkVerifyTokenAndVerifyEmail(data.token);
     // if (user) {
     //   // TODO maybe send welcome message
@@ -89,10 +93,30 @@ export class AuthService {
     return { id: user.id, email: user.email };
   }
 
-  public async resendVerificationEmail(data: ResendVerificationEmailDto) {
+  public async resendVerificationEmail(data: ResendVerificationEmailDto): Promise<LiteUser> {
     const user = await this.userService.updateVerifyToken(data.email);
 
     // TODO send verification email
+
+    return { id: user.id, email: user.email };
+  }
+
+  public async beginPasswordRecovery(data: BeginPasswordRecoveryDto): Promise<LiteUser> {
+    const user = await this.userService.updatePasswordRecoveryToken(data.email);
+
+    // TODO send password reset email
+
+    return { id: user.id, email: user.email };
+  }
+
+  public async checkPasswordRecoveryToken(data: CheckPasswordRecoveryTokenDto): Promise<LiteUser> {
+    const user = await this.userService.checkPasswordRecoveryToken(data.token);
+
+    return { id: user.id, email: user.email };
+  }
+
+  public async recoverPassword(data: RecoverPasswordDto): Promise<LiteUser> {
+    const user = await this.userService.recoverPassword(data);
 
     return { id: user.id, email: user.email };
   }

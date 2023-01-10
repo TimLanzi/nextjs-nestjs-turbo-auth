@@ -1,9 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { User } from '@acme/db';
+import * as argon2 from "argon2";
 import { PrismaService } from 'src/prisma.service';
 import { CreateNewUserDto } from './dtos/create-new-user.dto';
 import { generateVerifyToken } from 'src/util/generate-verify-token';
+import { RecoverPasswordDto } from 'src/auth/dtos/recover-password.dto';
 
 @Injectable()
 export class UserService {
@@ -133,6 +135,68 @@ export class UserService {
     } catch {
       throw new BadRequestException("No user with that email could be found")
     }
+  }
+
+  public async checkPasswordRecoveryToken(token: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        password_reset_token: token,
+        password_reset_expires: { gte: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException("Token is either invalid or expired");
+    }
+
+    return user;
+  }
+
+  public async updatePasswordRecoveryToken(email: string) {
+    const { token, expiresIn } = generateVerifyToken(2);
+    try {
+      const user = await this.prisma.user.update({
+        where: { email },
+        data: {
+          password_reset_token: token,
+          password_reset_expires: expiresIn,
+        },
+      });
+
+      return user;
+    } catch {
+      throw new BadRequestException("No user with that email could be found")
+    }
+  }
+
+  public async recoverPassword(data: RecoverPasswordDto) {
+    const exists = await this.prisma.user.findFirst({
+      where: {
+        password_reset_token: data.token,
+        password_reset_expires: { gte: new Date() },
+        email: data.email,
+      },
+    });
+
+    if (!exists) {
+      throw new BadRequestException("Token is either invalid or expired");
+    }
+
+    if (!!(await argon2.verify(exists.password, data.password))) {
+      throw new BadRequestException("New password cannot be the same as the old password");
+    }
+
+    const hash = await argon2.hash(data.password);
+    const user = await this.prisma.user.update({
+      where: { id: exists.id },
+      data: {
+        password: hash,
+        password_reset_token: null,
+        password_reset_expires: null,
+      },
+    });
+
+    return user;
   }
 
   // Delete expired refresh tokens once every hour

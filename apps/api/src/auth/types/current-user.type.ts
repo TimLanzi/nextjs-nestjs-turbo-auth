@@ -5,4 +5,6 @@ export type ICurrentUser = Omit<
   'password'
   | 'verify_email_token'
   | 'verify_email_expires'
+  | 'password_reset_token'
+  | 'password_reset_expires'
 >;
