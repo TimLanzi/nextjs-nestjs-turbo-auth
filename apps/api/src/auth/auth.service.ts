@@ -1,23 +1,27 @@
 import { Injectable, BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { User } from '@acme/db';
 import * as argon2 from "argon2";
 import { UserService } from 'src/user/user.service';
 import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
-import { JWTPayload } from './types/jwt-payload.type';
 import { VerifyEmailDto } from './dtos/verify-email.dto';
 import { ResendVerificationEmailDto } from './dtos/resend-verification-email.dto';
-import { generateVerifyToken } from 'src/util/generate-verify-token';
-import { User } from '@acme/db';
 import { BeginPasswordRecoveryDto } from './dtos/begin-password-recovery.dto';
 import { CheckPasswordRecoveryTokenDto } from './dtos/check-password-recovery-token.dto';
-import { LiteUser } from './types/lite-user.type';
 import { RecoverPasswordDto } from './dtos/recover-password.dto';
+import { LiteUser } from './types/lite-user.type';
+import { JWTPayload } from './types/jwt-payload.type';
+import { generateVerifyToken } from 'src/util/generate-verify-token';
+import { VerifyEmailEvent } from 'src/events/payloads/email/verify-email.event';
+import { PasswordRecoveryEmailEvent } from 'src/events/payloads/email/password-recovery.event';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly eventEmitter: EventEmitter2,
     private readonly configService: ConfigService,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
@@ -44,24 +48,20 @@ export class AuthService {
     }
 
     const hash = await argon2.hash(data.password);
-    const verifyEmailToken = generateVerifyToken(2);
+    const { token, expiresIn } = generateVerifyToken(2);
     const newUser = await this.userService.createNewUser({
       ...data,
       password: hash,
-      verify_email_token: verifyEmailToken.token,
-      verify_email_expires: verifyEmailToken.expiresIn,
+      verify_email_token: token,
+      verify_email_expires: expiresIn,
     });
 
-    // TODO send email with token
+    this.eventEmitter.emit(VerifyEmailEvent.id, new VerifyEmailEvent({
+      email: newUser.email,
+      token,
+    }));
 
     return { id: newUser.id, email: newUser.email };
-    // const { accessToken, refreshToken, refreshTokenExpires } = await this.getTokens({ sub: newUser.id, email: newUser.email });
-    // await this.userService.updateRefreshTokenById(newUser.id, refreshToken, refreshTokenExpires);
-
-    // return {
-    //   access_token: accessToken,
-    //   refresh_token: refreshToken,
-    // };
   }
   
   public async login(data: LoginDto) {
@@ -96,7 +96,10 @@ export class AuthService {
   public async resendVerificationEmail(data: ResendVerificationEmailDto): Promise<LiteUser> {
     const user = await this.userService.updateVerifyToken(data.email);
 
-    // TODO send verification email
+    this.eventEmitter.emit(VerifyEmailEvent.id, new VerifyEmailEvent({
+      email: user.email,
+      token: user.verify_email_token,
+    }));
 
     return { id: user.id, email: user.email };
   }
@@ -104,7 +107,10 @@ export class AuthService {
   public async beginPasswordRecovery(data: BeginPasswordRecoveryDto): Promise<LiteUser> {
     const user = await this.userService.updatePasswordRecoveryToken(data.email);
 
-    // TODO send password reset email
+    this.eventEmitter.emit(PasswordRecoveryEmailEvent.id, new PasswordRecoveryEmailEvent({
+      email: user.email,
+      token: user.password_reset_token,
+    }));
 
     return { id: user.id, email: user.email };
   }

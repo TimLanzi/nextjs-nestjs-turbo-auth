@@ -63,7 +63,7 @@ const Home: NextPage = () => {
           >
             <h3 className="text-2xl font-bold">Check Admin &rarr;</h3>
             <p className="mt-4 text-xl">
-              Check if you're an admin
+              Check if you&apos;re an admin
             </p>
           </Link>
 
@@ -73,7 +73,7 @@ const Home: NextPage = () => {
           >
             <h3 className="text-2xl font-bold">Check Moderator &rarr;</h3>
             <p className="mt-4 text-xl">
-              Check if you're a moderator
+              Check if you&apos;re a moderator
             </p>
           </Link>
         </div>
