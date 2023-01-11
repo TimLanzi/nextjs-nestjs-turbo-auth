@@ -7,6 +7,11 @@ interface AppRequestInit extends RequestInit {
   body?: any | undefined;
 }
 
+export type ErrorResponse = {
+  message?: string;
+  messages?: any;
+}
+
 // Wrapper for fetcher function to be used for react-query
 export const defaultQueryFn: QueryFunction = async({ queryKey }) => {
   const data = await fetcher(`${baseUrl}${queryKey[0]}`, {});

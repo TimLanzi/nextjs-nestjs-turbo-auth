@@ -1,42 +1,27 @@
-import { useMutation } from '@tanstack/react-query'
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import { FormEventHandler, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { Button } from '../../components/ui/atoms/Button'
+import { FormErrorMessage } from '../../components/ui/atoms/FormErrorMessage'
+import { FormField } from '../../components/ui/atoms/FormField'
+import { FormLabel } from '../../components/ui/atoms/FormLabel'
+import { Input } from '../../components/ui/atoms/Input'
+import { RegisterFormData, useRegister } from '../../hooks/auth-queries'
 import { useRedirect } from '../../hooks/useRedirect'
 import { useSession } from '../../hooks/useSession'
-import { baseUrl, fetcher } from '../../lib/queryFn'
-import { useTokenStore } from '../../store/tokenStore'
 
 const Register: NextPage = () => {
   const { status, data } = useSession();
-  const setTokens = useTokenStore(s => s.setTokens);
+  
+  const { register, handleSubmit } = useForm<RegisterFormData>();
 
-  const [form, setForm] = useState({
-    email: '',
-    password: '',
-  })
+  const registerUser = useRegister();
 
-  useRedirect('/auth/me', () => {
+  useRedirect('/user/me', () => {
     return !!data
   }, [data], {
     enabled: status === 'success',
   });
-
-  const register = useMutation({
-    mutationFn: async(credentials: typeof form) => {
-      const data = await fetcher(`${baseUrl}/auth/register`, {
-        method: "POST",
-        body: credentials,
-      });
-      setTokens(data);
-      return data;
-    }
-  });
-
-  const handleSubmit: FormEventHandler<HTMLFormElement> = (e) => {
-    e.preventDefault();
-    register.mutate(form);
-  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-2">
@@ -45,49 +30,58 @@ const Register: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="flex w-full flex-1 flex-col items-center justify-center px-20 text-center">
-        { !!register.data && (
+      <main className="flex w-full flex-1 flex-col items-center justify-center px-20">
+        { !!registerUser.data && (
           <div className='mb-5'>
             <code className="rounded-md bg-gray-100 p-3 font-mono">
-              {JSON.stringify(register.data)}
+              {JSON.stringify(registerUser.data)}
             </code>
           </div>
         )}
         
-        { !!register.error && (
+        { !!registerUser.error?.message && (
           <div className='mb-5'>
             <code className="rounded-md bg-gray-100 p-3 font-mono text-red-600">
-              {JSON.stringify(register.error)}
+              {registerUser.error.message}
             </code>
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div>
-            <input
-              className='border'
-              value={form.email}
-              onChange={e => setForm(prev => ({
-                ...prev,
-                email: e.target.value,
-              }))}
+        <form onSubmit={handleSubmit(data => registerUser.mutate(data))}>
+          <FormField>
+            <FormLabel>
+              Email
+            </FormLabel>
+            <Input
+              type="text"
+              {...register('email')}
             />
-          </div>
+            { !!registerUser.error?.messages?.email && (
+              <FormErrorMessage>
+                {registerUser.error.messages.email.join('')}
+              </FormErrorMessage>
+            )}
+          </FormField>
 
-          <div>
-            <input
-              className='border'
-              value={form.password}
-              onChange={e => setForm(prev => ({
-                ...prev,
-                password: e.target.value,
-              }))}
+          <FormField>
+            <FormLabel>
+              Password
+            </FormLabel>
+            <Input
+              type="text"
+              {...register('password')}
             />
-          </div>
+            { !!registerUser.error?.messages?.password && (
+              <FormErrorMessage>
+                {registerUser.error.messages.password.join('')}
+              </FormErrorMessage>
+            )}
+          </FormField>
 
-          <button type="submit">
-            Submit
-          </button>
+          <Button
+            type="submit"
+            label="Submit"
+          />
         </form>
       </main>
     </div>
