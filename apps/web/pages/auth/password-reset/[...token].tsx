@@ -16,10 +16,9 @@ const PasswordRecovery = () => {
 
   const resetPassword = useMutation({
     mutationFn: (x: { email: string, password: string }) => {
-      return fetcher(`${baseUrl}/auth/reset-password`, {
+      return fetcher(`${baseUrl}/auth/password-recovery/${token}`, {
         method: "POST",
         body: {
-          token,
           email: x.email,
           password: x.password,
         },
@@ -58,19 +57,28 @@ const PasswordRecovery = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div>
-            <input
-              className='border'
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-            />
-          </div>
+        { !!data && (
+          <>
+            <div className='mb-5'>
+              <code className="rounded-md bg-gray-100 p-3 font-mono">
+                {JSON.stringify({...data})}
+              </code>
+            </div>
+            <form onSubmit={handleSubmit}>
+              <div>
+                <input
+                  className='border'
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                />
+              </div>
 
-          <button type='submit'>
-            Submit
-          </button>
-        </form>
+              <button type='submit'>
+                Submit
+              </button>
+            </form>
+          </>
+        )}
       </main>
     </div>
   )

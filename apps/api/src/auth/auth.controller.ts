@@ -103,7 +103,7 @@ export class AuthController {
     return this.authService.checkPasswordRecoveryToken({ token });
   }
 
-  @Post('reset-password/:token')
+  @Post('password-recovery/:token')
   async resetPassword(
     @Param('token') token: string,
     @Body() data: Omit<RecoverPasswordDto, 'token'>
