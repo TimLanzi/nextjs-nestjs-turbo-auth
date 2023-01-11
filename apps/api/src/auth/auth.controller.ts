@@ -1,14 +1,16 @@
 import { Body, Controller, Get, Post, UseGuards, Res, Param } from '@nestjs/common';
+import { ZodValidation } from 'src/util/validate-zod.decorator';
 // import { Response } from "express";
 import { AuthService } from './auth.service';
 import { Auth } from './decorators/auth.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { BeginPasswordRecoveryDto } from './dtos/begin-password-recovery.dto';
-import { LoginDto } from './dtos/login.dto';
-import { RecoverPasswordDto } from './dtos/recover-password.dto';
-import { RegisterDto } from './dtos/register.dto';
-import { ResendVerificationEmailDto } from './dtos/resend-verification-email.dto';
-import { VerifyEmailDto } from './dtos/verify-email.dto';
+import { BeginPasswordRecoveryDto, BeginPasswordRecoverySchema } from './dtos/begin-password-recovery.dto';
+import { CheckPasswordRecoveryTokenDto, CheckPasswordRecoveryTokenSchema } from './dtos/check-password-recovery-token.dto';
+import { LoginDto, LoginSchema } from './dtos/login.dto';
+import { RecoverPasswordDto, RecoverPasswordSchema } from './dtos/recover-password.dto';
+import { RegisterDto, RegisterSchema } from './dtos/register.dto';
+import { ResendVerificationEmailDto, ResendVerificationSchema } from './dtos/resend-verification-email.dto';
+import { VerifyEmailDto, VerifyEmailSchema } from './dtos/verify-email.dto';
 import { AccessAuthGuard } from './guards/access-jwt.guard';
 import { RefreshAuthGuard } from './guards/refresh-jwt.guard';
 import { type ICurrentUser } from './types/current-user.type';
@@ -18,6 +20,7 @@ import { type RefreshUser } from './types/refresh-user.type';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @ZodValidation(LoginSchema)
   @Post('login')
   async login(
     @Body() data: LoginDto,
@@ -30,6 +33,7 @@ export class AuthController {
     return result;
   }
 
+  @ZodValidation(RegisterSchema)
   @Post('register')
   async register(
     @Body() data: RegisterDto,
@@ -75,6 +79,7 @@ export class AuthController {
     return this.authService.refreshTokens(userId, refreshToken);
   }
 
+  @ZodValidation(VerifyEmailSchema)
   @Post('verify-email')
   async verifyEmail(
     @Body() data: VerifyEmailDto,
@@ -82,6 +87,7 @@ export class AuthController {
     return this.authService.verifyEmail(data);
   }
 
+  @ZodValidation(ResendVerificationSchema)
   @Post('resend-verification-email')
   async resendVerificationEmail(
     @Body() data: ResendVerificationEmailDto,
@@ -89,6 +95,7 @@ export class AuthController {
     return this.authService.resendVerificationEmail(data);
   }
 
+  @ZodValidation(BeginPasswordRecoverySchema)
   @Post('password-recovery')
   async startPasswordRecovery(
     @Body() data: BeginPasswordRecoveryDto,
@@ -96,18 +103,19 @@ export class AuthController {
     return this.authService.beginPasswordRecovery(data);
   }
 
+  @ZodValidation(CheckPasswordRecoveryTokenSchema)
   @Get('password-recovery/:token')
   async checkPasswordRecoveryToken(
-    @Param('token') token: string,
+    @Param() data: CheckPasswordRecoveryTokenDto,
   ) {
-    return this.authService.checkPasswordRecoveryToken({ token });
+    return this.authService.checkPasswordRecoveryToken(data);
   }
 
-  @Post('password-recovery/:token')
+  @ZodValidation(RecoverPasswordSchema)
+  @Post('reset-password')
   async resetPassword(
-    @Param('token') token: string,
-    @Body() data: Omit<RecoverPasswordDto, 'token'>
+    @Body() data: RecoverPasswordDto
   ) {
-    return this.authService.recoverPassword({ token, ...data });
+    return this.authService.recoverPassword(data);
   }
 }

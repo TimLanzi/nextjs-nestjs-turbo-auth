@@ -56,7 +56,7 @@ const Register: NextPage = () => {
         
         { !!register.error && (
           <div className='mb-5'>
-            <code className="rounded-md bg-gray-100 p-3 font-mono">
+            <code className="rounded-md bg-gray-100 p-3 font-mono text-red-600">
               {JSON.stringify(register.error)}
             </code>
           </div>

@@ -50,7 +50,7 @@ export class AuthService {
     const hash = await argon2.hash(data.password);
     const { token, expiresIn } = generateVerifyToken(2);
     const newUser = await this.userService.createNewUser({
-      ...data,
+      email: data.email,
       password: hash,
       verify_email_token: token,
       verify_email_expires: expiresIn,
@@ -95,6 +95,9 @@ export class AuthService {
 
   public async resendVerificationEmail(data: ResendVerificationEmailDto): Promise<LiteUser> {
     const user = await this.userService.updateVerifyToken(data.email);
+    if (!user.verify_email_token) {
+      throw new BadRequestException("Error generating verification token");
+    }
 
     this.eventEmitter.emit(VerifyEmailEvent.id, new VerifyEmailEvent({
       email: user.email,
@@ -106,6 +109,9 @@ export class AuthService {
 
   public async beginPasswordRecovery(data: BeginPasswordRecoveryDto): Promise<LiteUser> {
     const user = await this.userService.updatePasswordRecoveryToken(data.email);
+    if (!user.password_reset_token) {
+      throw new BadRequestException("Error generating recovery token");
+    }
 
     this.eventEmitter.emit(PasswordRecoveryEmailEvent.id, new PasswordRecoveryEmailEvent({
       email: user.email,

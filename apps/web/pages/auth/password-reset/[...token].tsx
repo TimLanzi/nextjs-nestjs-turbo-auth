@@ -16,9 +16,10 @@ const PasswordRecovery = () => {
 
   const resetPassword = useMutation({
     mutationFn: (x: { email: string, password: string }) => {
-      return fetcher(`${baseUrl}/auth/password-recovery/${token}`, {
+      return fetcher(`${baseUrl}/auth/reset-password`, {
         method: "POST",
         body: {
+          token,
           email: x.email,
           password: x.password,
         },
@@ -52,7 +53,7 @@ const PasswordRecovery = () => {
         { !!(resetPassword.error || error) && (
           <div className='mb-5'>
             <code className="rounded-md bg-gray-100 p-3 font-mono text-red-600">
-              {JSON.stringify({message: resetPassword.error || error})}
+              {JSON.stringify({error: resetPassword.error || error})}
             </code>
           </div>
         )}

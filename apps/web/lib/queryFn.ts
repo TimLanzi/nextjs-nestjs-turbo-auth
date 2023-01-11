@@ -36,7 +36,7 @@ export const fetcher = async(url: string, options?: AppRequestInit | undefined) 
       const newTokens = await refreshToken(tokens.refreshToken);
       // Return initial request data if refresh fails
       if (!newTokens) {
-        throw { message: data.message || data.error };
+        throw getError(data);
       }
   
       // Make second attempt at request with updated access token
@@ -51,11 +51,11 @@ export const fetcher = async(url: string, options?: AppRequestInit | undefined) 
       data = await res.json();
     
       if (!res.ok) {
-        throw { message: data.message || data.error };
+        throw getError(data);
       }
       return data;
     }
-    throw { message: data.message || data.error };
+    throw getError(data);
   }
 
   let data = await res.json();
@@ -100,4 +100,17 @@ const refreshToken = async(refreshToken: string) => {
     accessToken: data.access_token,
     refreshToken: data.refresh_token,
   };
+}
+
+const getError = (err: any) => {
+  if (!!err.message) {
+    // if err.message is an object or array, put errors in `messages` (plural)
+    if (typeof err.message === 'object' || Array.isArray(err.message)) {
+      return { messages: err.message };
+    }
+    
+    return { message: err.message };
+  }
+
+  return { message: err.error };
 }
