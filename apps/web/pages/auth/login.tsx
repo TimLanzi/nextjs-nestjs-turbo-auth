@@ -9,17 +9,18 @@ import { FormErrorMessage } from '@ui/atoms/FormErrorMessage';
 import { useRedirect } from '@hooks/useRedirect'
 import { useSession } from '@hooks/useSession'
 import { LoginFormData, useLogin } from '@queries/auth';
+import Link from 'next/link';
 
 const Login: NextPage = () => {
-  const { status, data } = useSession();
+  const { status, data: session } = useSession();
 
   const { register, handleSubmit } = useForm<LoginFormData>()
 
   const login = useLogin();
 
   useRedirect('/user/me', () => {
-    return !!data || !!login.data
-  }, [data, login], {
+    return !!session || !!login.data
+  }, [session, login], {
     enabled: status === 'success',
   });
 
@@ -33,10 +34,16 @@ const Login: NextPage = () => {
       <main className="flex w-full flex-1 flex-col items-center justify-center px-20">
         <div className='container mx-auto max-w-sm'>
           { !!login.error?.message && (
-            <div className='mb-5'>
+            <div className='mb-5 flex flex-col'>
               <code className="rounded-md bg-gray-100 p-1 font-mono text-red-600">
                 {login.error.message}
               </code>
+
+              { login.error.message.includes("verified") && (
+                <Link className='text-blue-500' href="/auth/resend-verification">
+                  Send a new link?
+                </Link>
+              )}
             </div>
           )}
 
@@ -71,10 +78,20 @@ const Login: NextPage = () => {
               )}
             </FormField>
 
-            <Button
-              type="submit"
-              label="Submit"
-            />
+            <div className='flex space-x-4 items-center'>
+              <Button
+                type="submit"
+                label="Submit"
+              />
+              <div className='flex flex-col'>
+                <Link className='text-blue-500' href="/auth/register">
+                  Don't have an account?
+                </Link>
+                <Link className='text-blue-500' href="/auth/password-reset">
+                  Forgot your password?
+                </Link>
+              </div>
+            </div>
           </form>
         </div>
       </main>

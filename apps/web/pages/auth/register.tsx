@@ -9,17 +9,18 @@ import { Input } from '@ui/atoms/Input'
 import { RegisterFormData, useRegister } from '@queries/auth'
 import { useRedirect } from '@hooks/useRedirect'
 import { useSession } from '@hooks/useSession'
+import Link from 'next/link'
 
 const Register: NextPage = () => {
-  const { status, data } = useSession();
+  const { status, data: session } = useSession();
   
   const { register, handleSubmit } = useForm<RegisterFormData>();
 
   const registerUser = useRegister();
 
   useRedirect('/user/me', () => {
-    return !!data
-  }, [data], {
+    return !!session
+  }, [session], {
     enabled: status === 'success',
   });
 
@@ -79,10 +80,17 @@ const Register: NextPage = () => {
               )}
             </FormField>
 
-            <Button
-              type="submit"
-              label="Submit"
-            />
+            <div className='flex space-x-4 items-center'>
+              <Button
+                type="submit"
+                label="Submit"
+              />
+              <div className='flex flex-col'>
+                <Link className='text-blue-500' href="/auth/login">
+                  Already have an account?
+                </Link>
+              </div>
+            </div>
           </form>
         </div>
       </main>

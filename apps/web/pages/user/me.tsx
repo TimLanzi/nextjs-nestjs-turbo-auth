@@ -1,14 +1,9 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useSession } from '@hooks/useSession'
-import { Button } from '@ui/atoms/Button';
 
 const Session: NextPage = () => {
-  const { data, isLoading, error, logout } = useSession({ redirectTo: '/auth/login' });
-
-  const handleLogout = async() => {
-    await logout();
-  }
+  const { data: session, isLoading, error } = useSession({ redirectTo: '/auth/login' });
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-2">
@@ -31,19 +26,12 @@ const Session: NextPage = () => {
               </code>
             </div>
           )}
-          { !!data && (
-            <>
-              <div className='text-center mb-5'>
-                <code className="rounded-md bg-gray-100 p-1 font-mono">
-                  {JSON.stringify({ ...data })}
-                </code>
-              </div>
-              <Button
-                type="button"
-                label="Logout"
-                onClick={() => handleLogout()}
-              />
-            </>
+          { !!session && (
+            <div className='text-center mb-5'>
+              <code className="rounded-md bg-gray-100 p-1 font-mono">
+                {JSON.stringify({ ...session })}
+              </code>
+            </div>
           )}
         </div>
       </main>

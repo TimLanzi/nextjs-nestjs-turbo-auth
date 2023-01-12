@@ -21,6 +21,11 @@ const Admin: NextPage = () => {
 
       <main className="flex w-full flex-1 flex-col items-center justify-center px-20 text-center">
         <div className='container mx-auto max-w-sm'>
+          { status === 'loading' && (
+            <>
+              Loading...
+            </>
+          )}
           { !!data && (
             <div className='mb-5'>
               <code className="rounded-md bg-gray-100 p-1 font-mono">

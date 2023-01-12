@@ -16,7 +16,7 @@ export class RolesGuard implements CanActivate {
 
     const { user } = context.switchToHttp().getRequest();
     if (!user.email_verified) {
-      throw new UnauthorizedException("Email has not been verified")
+      throw new UnauthorizedException("Email is not yet verified")
     }
 
     if (!requiredRoles.length) {
