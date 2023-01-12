@@ -1,39 +1,22 @@
-import React, { FormEventHandler, useEffect, useRef, useState } from 'react'
+import React from 'react'
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { baseUrl, fetcher } from '../../../lib/queryFn';
+import { useForm } from 'react-hook-form';
+import { ResetPasswordFormData, useCheckPasswordResetToken, useResetPassword } from '@queries/auth';
+import { FormField } from '@ui/atoms/FormField';
+import { Input } from '@ui/atoms/Input';
+import { Button } from '@ui/atoms/Button';
+import { FormLabel } from '@ui/atoms/FormLabel';
+import { FormErrorMessage } from '@ui/atoms/FormErrorMessage';
 
-const PasswordRecovery = () => {
-  const [password, setPassword] = useState('');
+const PasswordReset = () => {
   const { query } = useRouter();
   const token = Array.isArray(query.token) ? query.token.join('/') : query.token;
   
-  const { data, error } = useQuery<{id: string, email: string}>({
-    queryKey: [`/auth/password-recovery/${token as string}`],
-    enabled: !!token,
-  });
+  const { data: checkTokenData, error: checkTokenError, isLoading } = useCheckPasswordResetToken(token);
+  const resetPassword = useResetPassword()
 
-  const resetPassword = useMutation({
-    mutationFn: (x: { email: string, password: string }) => {
-      return fetcher(`${baseUrl}/auth/reset-password`, {
-        method: "POST",
-        body: {
-          token,
-          email: x.email,
-          password: x.password,
-        },
-      });
-    },
-  });
-
-  const handleSubmit: FormEventHandler<HTMLFormElement> = (e) => {
-    e.preventDefault();
-    resetPassword.mutate({
-      email: data?.email || '',
-      password,
-    });
-  }
+  const { register, handleSubmit } = useForm<ResetPasswordFormData>();
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-2">
@@ -42,47 +25,64 @@ const PasswordRecovery = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="flex w-full flex-1 flex-col items-center justify-center px-20 text-center">
-        { !!resetPassword.data && (
-          <div className='mb-5'>
-            <code className="rounded-md bg-gray-100 p-3 font-mono">
-              {JSON.stringify({...resetPassword.data})}
-            </code>
-          </div>
-        )}
-        { !!(resetPassword.error || error) && (
-          <div className='mb-5'>
-            <code className="rounded-md bg-gray-100 p-3 font-mono text-red-600">
-              {JSON.stringify({error: resetPassword.error || error})}
-            </code>
-          </div>
-        )}
-
-        { !!data && (
-          <>
+      <main className="flex w-full flex-1 flex-col items-center justify-center px-20">
+        <div className='container mx-auto max-w-sm'>
+          { isLoading && (
+            <>
+              Loading...
+            </>
+          )}
+          
+          { !!resetPassword.data && (
             <div className='mb-5'>
-              <code className="rounded-md bg-gray-100 p-3 font-mono">
-                {JSON.stringify({...data})}
+              <code className="rounded-md bg-gray-100 p-1 font-mono">
+                {JSON.stringify({...resetPassword.data})}
               </code>
             </div>
-            <form onSubmit={handleSubmit}>
-              <div>
-                <input
-                  className='border'
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                />
-              </div>
+          )}
+          { !!(resetPassword.error?.message || checkTokenError) && (
+            <div className='mb-5'>
+              <code className="rounded-md bg-gray-100 p-1 font-mono text-red-600">
+                {JSON.stringify({error: resetPassword.error?.message || checkTokenError})}
+              </code>
+            </div>
+          )}
 
-              <button type='submit'>
-                Submit
-              </button>
+          { !!checkTokenData && (
+            <form
+              onSubmit={handleSubmit(form => {
+                return resetPassword.mutate({
+                  token: token as string,
+                  email: checkTokenData.email,
+                  ...form,
+                });
+              })}
+            >
+              <FormField>
+                <FormLabel>
+                  New Password
+                </FormLabel>
+                <Input
+                  type="password"
+                  {...register('password')}
+                />
+                { !!resetPassword.error?.messages?.password && (
+                  <FormErrorMessage>
+                    {resetPassword.error.messages.password}
+                  </FormErrorMessage>
+                )}
+              </FormField>
+
+              <Button
+                type='submit'
+                label='Submit'
+              />
             </form>
-          </>
-        )}
+          )}
+        </div>
       </main>
     </div>
   )
 }
 
-export default PasswordRecovery
+export default PasswordReset

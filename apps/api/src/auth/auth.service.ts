@@ -9,14 +9,14 @@ import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
 import { VerifyEmailDto } from './dtos/verify-email.dto';
 import { ResendVerificationEmailDto } from './dtos/resend-verification-email.dto';
-import { BeginPasswordRecoveryDto } from './dtos/begin-password-recovery.dto';
-import { CheckPasswordRecoveryTokenDto } from './dtos/check-password-recovery-token.dto';
-import { RecoverPasswordDto } from './dtos/recover-password.dto';
+import { BeginPasswordResetDto } from './dtos/begin-password-reset.dto';
+import { CheckPasswordResetTokenDto } from './dtos/check-password-reset-token.dto';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { LiteUser } from './types/lite-user.type';
 import { JWTPayload } from './types/jwt-payload.type';
 import { generateVerifyToken } from 'src/util/generate-verify-token';
 import { VerifyEmailEvent } from 'src/events/payloads/email/verify-email.event';
-import { PasswordRecoveryEmailEvent } from 'src/events/payloads/email/password-recovery.event';
+import { PasswordResetEmailEvent } from 'src/events/payloads/email/password-reset.event';
 
 @Injectable()
 export class AuthService {
@@ -107,13 +107,13 @@ export class AuthService {
     return { id: user.id, email: user.email };
   }
 
-  public async beginPasswordRecovery(data: BeginPasswordRecoveryDto): Promise<LiteUser> {
-    const user = await this.userService.updatePasswordRecoveryToken(data.email);
+  public async beginPasswordReset(data: BeginPasswordResetDto): Promise<LiteUser> {
+    const user = await this.userService.updatePasswordResetToken(data.email);
     if (!user.password_reset_token) {
-      throw new BadRequestException("Error generating recovery token");
+      throw new BadRequestException("Error generating reset token");
     }
 
-    this.eventEmitter.emit(PasswordRecoveryEmailEvent.id, new PasswordRecoveryEmailEvent({
+    this.eventEmitter.emit(PasswordResetEmailEvent.id, new PasswordResetEmailEvent({
       email: user.email,
       token: user.password_reset_token,
     }));
@@ -121,14 +121,14 @@ export class AuthService {
     return { id: user.id, email: user.email };
   }
 
-  public async checkPasswordRecoveryToken(data: CheckPasswordRecoveryTokenDto): Promise<LiteUser> {
-    const user = await this.userService.checkPasswordRecoveryToken(data.token);
+  public async checkPasswordResetToken(data: CheckPasswordResetTokenDto): Promise<LiteUser> {
+    const user = await this.userService.checkPasswordResetToken(data.token);
 
     return { id: user.id, email: user.email };
   }
 
-  public async recoverPassword(data: RecoverPasswordDto): Promise<LiteUser> {
-    const user = await this.userService.recoverPassword(data);
+  public async resetPassword(data: ResetPasswordDto): Promise<LiteUser> {
+    const user = await this.userService.resetPassword(data);
 
     return { id: user.id, email: user.email };
   }

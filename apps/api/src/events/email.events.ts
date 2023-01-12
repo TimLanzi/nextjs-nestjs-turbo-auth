@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
-import { PasswordRecoveryEmailEvent } from "./payloads/email/password-recovery.event";
+import { PasswordResetEmailEvent } from "./payloads/email/password-reset.event";
 import { VerifyEmailEvent } from "./payloads/email/verify-email.event";
 
 @Injectable()
@@ -11,8 +11,8 @@ export class EmailEvents {
     console.log(data)
   }
 
-  @OnEvent(PasswordRecoveryEmailEvent.id)
-  handleSendPasswordRecoveryEmail({ data }: PasswordRecoveryEmailEvent) {
+  @OnEvent(PasswordResetEmailEvent.id)
+  handleSendPasswordResetEmail({ data }: PasswordResetEmailEvent) {
     // TODO send password reset email
     console.log(data)
   }

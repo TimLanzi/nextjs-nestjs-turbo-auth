@@ -1,5 +1,5 @@
 import { QueryFunction } from "@tanstack/react-query"
-import { useTokenStore } from "../store/tokenStore";
+import { useTokenStore } from "@stores/tokenStore";
 
 export const baseUrl = `http://localhost:4000`;
 

@@ -5,7 +5,7 @@ import * as argon2 from "argon2";
 import { PrismaService } from 'src/prisma.service';
 import { CreateNewUserDto } from './dtos/create-new-user.dto';
 import { generateVerifyToken } from 'src/util/generate-verify-token';
-import { RecoverPasswordDto } from 'src/auth/dtos/recover-password.dto';
+import { ResetPasswordDto } from 'src/auth/dtos/reset-password.dto';
 
 @Injectable()
 export class UserService {
@@ -137,7 +137,7 @@ export class UserService {
     }
   }
 
-  public async checkPasswordRecoveryToken(token: string) {
+  public async checkPasswordResetToken(token: string) {
     const user = await this.prisma.user.findFirst({
       where: {
         password_reset_token: token,
@@ -152,7 +152,7 @@ export class UserService {
     return user;
   }
 
-  public async updatePasswordRecoveryToken(email: string) {
+  public async updatePasswordResetToken(email: string) {
     const { token, expiresIn } = generateVerifyToken(2);
     try {
       const user = await this.prisma.user.update({
@@ -169,7 +169,7 @@ export class UserService {
     }
   }
 
-  public async recoverPassword(data: RecoverPasswordDto) {
+  public async resetPassword(data: ResetPasswordDto) {
     const exists = await this.prisma.user.findFirst({
       where: {
         password_reset_token: data.token,

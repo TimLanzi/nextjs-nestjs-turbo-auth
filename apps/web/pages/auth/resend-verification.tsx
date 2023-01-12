@@ -1,25 +1,17 @@
-import React, { FormEventHandler, useEffect, useRef, useState } from 'react'
+import React from 'react'
 import Head from 'next/head';
-import { useRouter } from 'next/router';
-import { useMutation } from '@tanstack/react-query'
-import { baseUrl, fetcher } from '../../lib/queryFn';
+import { useForm } from 'react-hook-form';
+import { ResendVerificationFormData, useResendVerification } from '@queries/auth';
+import { FormField } from '@ui/atoms/FormField';
+import { Input } from '@ui/atoms/Input';
+import { Button } from '@ui/atoms/Button';
+import { FormLabel } from '@ui/atoms/FormLabel';
+import { FormErrorMessage } from '@ui/atoms/FormErrorMessage';
 
 const ResendVerification = () => {
-  const [email, setEmail] = useState('');
+  const { register, handleSubmit } = useForm<ResendVerificationFormData>();
 
-  const resendVerification = useMutation({
-    mutationFn: (email: string) => {
-      return fetcher(`${baseUrl}/auth/resend-verification-email`, {
-        method: "POST",
-        body: { email },
-      });
-    },
-  });
-
-  const handleSubmit: FormEventHandler<HTMLFormElement> = (e) => {
-    e.preventDefault();
-    resendVerification.mutate(email);
-  }
+  const resendVerification = useResendVerification();
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-2">
@@ -28,35 +20,45 @@ const ResendVerification = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="flex w-full flex-1 flex-col items-center justify-center px-20 text-center">
-        { !!resendVerification.data && (
-          <div className='mb-5'>
-            <code className="rounded-md bg-gray-100 p-3 font-mono">
-              {JSON.stringify({...resendVerification.data})}
-            </code>
-          </div>
-        )}
-        { !!resendVerification.error && (
-          <div className='mb-5'>
-            <code className="rounded-md bg-gray-100 p-3 font-mono text-red-600">
-              {JSON.stringify({message: resendVerification.error})}
-            </code>
-          </div>
-        )}
+      <main className="flex w-full flex-1 flex-col items-center justify-center px-20">
+        <div className='container mx-auto max-w-sm'>
+          { !!resendVerification.data && (
+            <div className='mb-5'>
+              <code className="rounded-md bg-gray-100 p-1 font-mono">
+                {JSON.stringify({...resendVerification.data})}
+              </code>
+            </div>
+          )}
+          { !!resendVerification.error?.message && (
+            <div className='mb-5'>
+              <code className="rounded-md bg-gray-100 p-1 font-mono text-red-600">
+                {resendVerification.error.message}
+              </code>
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit}>
-          <div>
-            <input
-              className='border'
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+          <form onSubmit={handleSubmit(data => resendVerification.mutate(data))}>
+            <FormField>
+              <FormLabel>
+                Email
+              </FormLabel>
+              <Input
+                type="text"
+                {...register('email')}
+              />
+              { !!resendVerification.error?.messages?.email && (
+                <FormErrorMessage>
+                  {resendVerification.error.messages.email}
+                </FormErrorMessage>
+              )}
+            </FormField>
+
+            <Button
+              type='submit'
+              label="Submit"
             />
-          </div>
-
-          <button type='submit'>
-            Submit
-          </button>
-        </form>
+          </form>
+        </div>
       </main>
     </div>
   )

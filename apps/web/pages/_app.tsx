@@ -1,7 +1,7 @@
 import '../styles/globals.css'
-import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import type { AppProps } from 'next/app'
-import { defaultQueryFn } from '../lib/queryFn';
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { defaultQueryFn } from '@lib/queryFn';
 
 const client = new QueryClient({
   defaultOptions: {

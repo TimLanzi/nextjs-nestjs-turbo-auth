@@ -1,13 +1,13 @@
-import { Body, Controller, Get, Post, UseGuards, Res, Param } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards, Res, Param, Put } from '@nestjs/common';
 import { ZodValidation } from 'src/util/validate-zod.decorator';
 // import { Response } from "express";
 import { AuthService } from './auth.service';
 import { Auth } from './decorators/auth.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { BeginPasswordRecoveryDto, BeginPasswordRecoverySchema } from './dtos/begin-password-recovery.dto';
-import { CheckPasswordRecoveryTokenDto, CheckPasswordRecoveryTokenSchema } from './dtos/check-password-recovery-token.dto';
+import { BeginPasswordResetDto, BeginPasswordResetSchema } from './dtos/begin-password-reset.dto';
+import { CheckPasswordResetTokenDto, CheckPasswordResetTokenSchema } from './dtos/check-password-reset-token.dto';
 import { LoginDto, LoginSchema } from './dtos/login.dto';
-import { RecoverPasswordDto, RecoverPasswordSchema } from './dtos/recover-password.dto';
+import { ResetPasswordDto, ResetPasswordSchema } from './dtos/reset-password.dto';
 import { RegisterDto, RegisterSchema } from './dtos/register.dto';
 import { ResendVerificationEmailDto, ResendVerificationSchema } from './dtos/resend-verification-email.dto';
 import { VerifyEmailDto, VerifyEmailSchema } from './dtos/verify-email.dto';
@@ -95,27 +95,27 @@ export class AuthController {
     return this.authService.resendVerificationEmail(data);
   }
 
-  @ZodValidation(BeginPasswordRecoverySchema)
-  @Post('password-recovery')
-  async startPasswordRecovery(
-    @Body() data: BeginPasswordRecoveryDto,
+  @ZodValidation(BeginPasswordResetSchema)
+  @Put('password-reset')
+  async startPasswordReset(
+    @Body() data: BeginPasswordResetDto,
   ) {
-    return this.authService.beginPasswordRecovery(data);
+    return this.authService.beginPasswordReset(data);
   }
 
-  @ZodValidation(CheckPasswordRecoveryTokenSchema)
-  @Get('password-recovery/:token')
-  async checkPasswordRecoveryToken(
-    @Param() data: CheckPasswordRecoveryTokenDto,
+  @ZodValidation(CheckPasswordResetTokenSchema)
+  @Get('password-reset/:token')
+  async checkPasswordResetToken(
+    @Param() data: CheckPasswordResetTokenDto,
   ) {
-    return this.authService.checkPasswordRecoveryToken(data);
+    return this.authService.checkPasswordResetToken(data);
   }
 
-  @ZodValidation(RecoverPasswordSchema)
-  @Post('reset-password')
+  @ZodValidation(ResetPasswordSchema)
+  @Post('password-reset')
   async resetPassword(
-    @Body() data: RecoverPasswordDto
+    @Body() data: ResetPasswordDto
   ) {
-    return this.authService.recoverPassword(data);
+    return this.authService.resetPassword(data);
   }
 }

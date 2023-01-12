@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { baseUrl, fetcher } from "../lib/queryFn";
-import { useTokenStore } from "../store/tokenStore";
+import { baseUrl, fetcher } from "@lib/queryFn";
+import { useTokenStore } from "@stores/tokenStore";
 import { useRedirect } from "./useRedirect";
 
 type SessionUser = {
