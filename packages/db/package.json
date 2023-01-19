@@ -17,6 +17,7 @@
     "@prisma/client": "^4.8.0"
   },
   "devDependencies": {
+    "@acme/tsconfig": "*",
     "@types/node": "^18.11.18",
     "dotenv-cli": "^6.0.0",
     "prisma": "^4.8.0",
