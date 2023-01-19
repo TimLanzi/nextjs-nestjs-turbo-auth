@@ -10,7 +10,8 @@
       "cache": false
     },
     "db:studio": {
-      "cache": false
+      "cache": false,
+      "persistent": true
     },
     "build": {
       "dependsOn": ["^build", "^db:generate"],
@@ -28,13 +29,19 @@
     "//#clean": {
       "cache": false
     },
-    "dev": {
+    "type-check": {
       "dependsOn": ["^db:generate"],
       "cache": false
     },
+    "dev": {
+      "dependsOn": ["^db:generate"],
+      "cache": false,
+      "persistent": true
+    },
     "start:dev": {
       "dependsOn": ["^db:generate"],
-      "cache": false
+      "cache": false,
+      "persistent": true
     },
     "api#start:dev": {
       "env": [

@@ -8,6 +8,7 @@
   "scripts": {
     "clean": "rimraf .turbo node_modules dist",
     "prebuild": "rimraf dist",
+    "type-check": "tsc --noEmit",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",

@@ -16,13 +16,16 @@
     "db:push": "turbo db:push",
     "build": "turbo build",
     "lint": "turbo lint",
-    "dev": "turbo dev start:dev db:studio --parallel"
+    "dev": "turbo dev start:dev db:studio",
+    "type-check": "turbo type-check"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@acme/eslint-config-custom": "*",
     "rimraf": "^3.0.2",
-    "turbo": "^1.7.0"
+    "turbo": "^1.7.0",
+    "typescript": "4.9.4"
   }
 }
