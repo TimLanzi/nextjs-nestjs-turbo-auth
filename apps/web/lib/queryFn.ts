@@ -1,7 +1,8 @@
 import { QueryFunction } from "@tanstack/react-query"
-import { useTokenStore } from "@stores/tokenStore";
+// import { useTokenStore } from "@stores/tokenStore";
+import { getTokens } from "./getTokens";
 
-export const baseUrl = `http://localhost:4000`;
+export const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
 interface AppRequestInit extends RequestInit {
   body?: any | undefined;
@@ -22,53 +23,58 @@ export const defaultQueryFn: QueryFunction = async({ queryKey }) => {
 
 // Wrapper for fetcheRequest function that implements refresh token attempt
 export const fetcher = async(url: string, options?: AppRequestInit | undefined) => {
-  const tokens = useTokenStore.getState()
+  const tokens = await getTokens();
 
   // Make initial request
   let res = await fetchRequest(url, {
     ...options,
     headers: {
-      'X-Access-Token': `Bearer ${tokens.accessToken}`,
-      'X-Refresh-Token': `Bearer ${tokens.refreshToken}`,
+      'X-Access-Token': !!tokens.accessToken ? `Bearer ${tokens.accessToken}` : undefined,
+      'X-Refresh-Token': !!tokens.refreshToken ? `Bearer ${tokens.refreshToken}` : undefined,
       ...options?.headers,
     },
   });
+  let data = await res.json();
 
   if (!res.ok) {
-    let data = await res.json();
-    if (data.message === 'AccessTokenError') {
-      // If request fails, attempt to refresh token
-      const newTokens = await refreshToken(tokens.refreshToken);
-      // Return initial request data if refresh fails
-      if (!newTokens) {
-        throw getError(data);
-      }
+    // let data = await res.json();
+    // if (data.message === 'AccessTokenError') {
+    //   if (!!tokens.refreshToken) {
+    //     throw getError(data);
+    //   }
+
+    //   // If request fails, attempt to refresh token
+    //   const newTokens = await refreshToken(tokens.refreshToken);
+    //   // Return initial request data if refresh fails
+    //   if (!newTokens) {
+    //     throw getError(data);
+    //   }
   
-      // Make second attempt at request with updated access token
-      res = await fetchRequest(url, {
-        ...options,
-        headers: {
-          'X-Access-Token': `Bearer ${newTokens.accessToken}`,
-          'X-Refresh-Token': `Bearer ${newTokens.refreshToken}`,
-          ...options?.headers,
-        },
-      });
-      data = await res.json();
+    //   // Make second attempt at request with updated access token
+    //   res = await fetchRequest(url, {
+    //     ...options,
+    //     headers: {
+    //       'X-Access-Token': `Bearer ${newTokens.accessToken}`,
+    //       'X-Refresh-Token': `Bearer ${newTokens.refreshToken}`,
+    //       ...options?.headers,
+    //     },
+    //   });
+    //   data = await res.json();
     
-      if (!res.ok) {
-        throw getError(data);
-      }
-      return data;
-    }
+    //   if (!res.ok) {
+    //     throw getError(data);
+    //   }
+    //   return data;
+    // }
     throw getError(data);
   }
 
-  let data = await res.json();
+  // let data = await res.json();
   return data;
 }
 
 // Wrapper of fetch function with application/json set by default
-const fetchRequest = async(url: string, options?: AppRequestInit | undefined) => {
+export const fetchRequest = async(url: string, options?: AppRequestInit | undefined) => {
   if (options?.body) {
     options.body = JSON.stringify(options.body);
   }
@@ -82,30 +88,30 @@ const fetchRequest = async(url: string, options?: AppRequestInit | undefined) =>
   });
 }
 
-// Refreshes tokens
-const refreshToken = async(refreshToken: string) => {
-  const { removeTokens, setTokens } = useTokenStore.getState();
-  const res = await fetch(`${baseUrl}/auth/refresh`, {
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Refresh-Token': `Bearer ${refreshToken}`,
-    }
-  });
-  const data = await res.json();
+// // Refreshes tokens
+// const refreshToken = async(refreshToken: string) => {
+//   const { removeTokens, setTokens } = useTokenStore.getState();
+//   const res = await fetch(`${baseUrl}/auth/refresh`, {
+//     headers: {
+//       'Content-Type': 'application/json',
+//       'X-Refresh-Token': `Bearer ${refreshToken}`,
+//     }
+//   });
+//   const data = await res.json();
 
-  // Remove tokens if refresh fails
-  if (!res.ok && data.message === 'RefreshTokenError') {
-    removeTokens()
-    return null;
-  }
+//   // Remove tokens if refresh fails
+//   if (!res.ok && data.message === 'RefreshTokenError') {
+//     removeTokens()
+//     return null;
+//   }
 
-  // Set new tokens and return
-  setTokens(data);
-  return {
-    accessToken: data.access_token,
-    refreshToken: data.refresh_token,
-  };
-}
+//   // Set new tokens and return
+//   setTokens(data);
+//   return {
+//     accessToken: data.access_token,
+//     refreshToken: data.refresh_token,
+//   };
+// }
 
 const getError = (err: any) => {
   if (!!err.message) {

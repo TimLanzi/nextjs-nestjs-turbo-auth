@@ -1,22 +1,20 @@
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
-import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-import { defaultQueryFn } from '@lib/queryFn';
+import { SessionProvider } from "next-auth/react";
+import { QueryClientProvider } from "@tanstack/react-query";
 import Navbar from '@ui/layout/Navbar';
+import { client } from '@lib/queryClient';
 
-const client = new QueryClient({
-  defaultOptions: {
-    queries: {
-      queryFn: defaultQueryFn
-    },
-  },
-});
-
-function MyApp({ Component, pageProps }: AppProps) {
+function MyApp({
+  Component,
+  pageProps: { session, ...pageProps },
+}: AppProps) {
   return (
     <QueryClientProvider client={client}>
-      <Navbar />
-      <Component {...pageProps} />
+      <SessionProvider session={session}>
+        <Navbar />
+        <Component {...pageProps} />
+      </SessionProvider>
     </QueryClientProvider>
   )
 }

@@ -1,14 +1,13 @@
 import React from 'react'
 import Link from 'next/link'
-import { useSession } from '@hooks/useSession';
+import { signOut, useSession } from 'next-auth/react';
 import { Button } from '@ui/atoms/Button'
+import { useTokenStore } from '@stores/tokenStore';
 
 const Navbar = () => {
-  const { data: session, logout } = useSession();
+  const { data: session } = useSession();
+  const removeTokens = useTokenStore(s => s.removeTokens);
 
-  const handleLogout = async() => {
-    await logout();
-  }
   return (
     <header className='fixed p-4 w-full justify-between flex'>
       <Link className='text-xl text-indigo-500' href='/'>
@@ -19,7 +18,7 @@ const Navbar = () => {
         <Button
           type="button"
           label="Logout"
-          onClick={() => handleLogout()}
+          onClick={() => signOut().then(() => removeTokens())}
         />
       )}
     </header>

@@ -1,11 +1,19 @@
 import { useQuery } from '@tanstack/react-query'
-import type { NextPage } from 'next'
+import type { GetServerSideProps, NextPage } from 'next'
 import Head from 'next/head'
 import { useRedirect } from '@hooks/useRedirect';
-import { useSession } from '@hooks/useSession';
+import { getCurrentUser } from '@acme/auth';
+
+export const getServerSideProps = (async(ctx) => {
+  const user = await getCurrentUser(ctx);
+  return {
+    props: {
+      user
+    },
+  };
+}) satisfies GetServerSideProps;
 
 const Admin: NextPage = () => {
-  useSession({ redirectTo: '/auth/login' });
   const { data, status } = useQuery({ queryKey: ['/user/moderator'] });
 
   useRedirect('/', () => {
