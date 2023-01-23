@@ -1,29 +1,11 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import { useForm } from 'react-hook-form'
-import { Button } from '@ui/atoms/Button'
-import { FormErrorMessage } from '@ui/atoms/FormErrorMessage'
-import { FormField } from '@ui/atoms/FormField'
-import { FormLabel } from '@ui/atoms/FormLabel'
-import { Input } from '@ui/atoms/Input'
-import { RegisterFormData, useRegister } from '@queries/auth'
-import { useRedirect } from '@hooks/useRedirect'
-import { useSession } from '@hooks/useSession'
-import Link from 'next/link'
+import RegisterForm from '@components/forms/RegisterForm'
+import { useAuthPageRedirect } from '@hooks/useRedirect';
 
 const Register: NextPage = () => {
-  const { status, data: session } = useSession();
+  useAuthPageRedirect();
   
-  const { register, handleSubmit } = useForm<RegisterFormData>();
-
-  const registerUser = useRegister();
-
-  useRedirect('/user/me', () => {
-    return !!session
-  }, [session], {
-    enabled: status === 'success',
-  });
-
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-2">
       <Head>
@@ -33,65 +15,7 @@ const Register: NextPage = () => {
 
       <main className="flex w-full flex-1 flex-col items-center justify-center px-20">
         <div className='container mx-auto max-w-sm'>
-          { !!registerUser.data && (
-            <div className='mb-5'>
-              <code className="rounded-md bg-gray-100 p-1 font-mono">
-                {JSON.stringify(registerUser.data)}
-              </code>
-            </div>
-          )}
-          
-          { !!registerUser.error?.message && (
-            <div className='mb-5'>
-              <code className="rounded-md bg-gray-100 p-1  font-mono text-red-600">
-                {registerUser.error.message}
-              </code>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit(data => registerUser.mutate(data))}>
-            <FormField>
-              <FormLabel>
-                Email
-              </FormLabel>
-              <Input
-                type="text"
-                {...register('email')}
-              />
-              { !!registerUser.error?.messages?.email && (
-                <FormErrorMessage>
-                  {registerUser.error.messages.email.join('')}
-                </FormErrorMessage>
-              )}
-            </FormField>
-
-            <FormField>
-              <FormLabel>
-                Password
-              </FormLabel>
-              <Input
-                type="text"
-                {...register('password')}
-              />
-              { !!registerUser.error?.messages?.password && (
-                <FormErrorMessage>
-                  {registerUser.error.messages.password.join('')}
-                </FormErrorMessage>
-              )}
-            </FormField>
-
-            <div className='flex space-x-4 items-center'>
-              <Button
-                type="submit"
-                label="Submit"
-              />
-              <div className='flex flex-col'>
-                <Link className='text-blue-500' href="/auth/login">
-                  Already have an account?
-                </Link>
-              </div>
-            </div>
-          </form>
+          <RegisterForm />
         </div>
       </main>
     </div>

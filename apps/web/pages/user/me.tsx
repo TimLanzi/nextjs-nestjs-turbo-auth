@@ -1,9 +1,14 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useSession } from '@hooks/useSession'
+import { useRouter } from 'next/router';
 
 const Session: NextPage = () => {
-  const { data: session, isLoading, error } = useSession({ redirectTo: '/auth/login' });
+  const router = useRouter();
+  const { data: session, isLoading, error } = useSession({
+    required: true,
+    onUnauthenticated: () => router.replace('/auth/login'),
+  });
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-2">

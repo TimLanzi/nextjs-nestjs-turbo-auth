@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -7,17 +7,21 @@ import { useVerifyEmail } from '@queries/auth';
 const VerifyEmail = () => {
   const sentRequest = useRef(false);
   const router = useRouter();
+  // base64 string token can include forward slashes. if this is the case, join token fragments with '/'
+  const token = useMemo(() => {
+    return Array.isArray(router.query.token)
+      ? router.query.token.join('/')
+      : router.query.token;
+  }, [router.query]);
 
   const verifyEmail = useVerifyEmail();
 
   useEffect(() => {
-    if (router.query.token && !sentRequest.current) {
-      // base64 string token can include forward slashes. if this is the case, join token fragments with '/'
-      const token = Array.isArray(router.query.token) ? router.query.token.join('/') : router.query.token;
+    if (!!token && !sentRequest.current) {
       verifyEmail.mutate({ token });
       sentRequest.current = true;
     }
-  }, [router.query, verifyEmail])
+  }, [token, verifyEmail])
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-2">

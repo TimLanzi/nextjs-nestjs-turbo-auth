@@ -3,9 +3,14 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useRedirect } from '@hooks/useRedirect';
 import { useSession } from '@hooks/useSession';
+import { useRouter } from 'next/router';
 
 const Admin: NextPage = () => {
-  useSession({ redirectTo: '/auth/login' });
+  const router = useRouter();
+  useSession({
+    required: true,
+    onUnauthenticated: () => router.replace('/auth/login'),
+  });
   const { data, status } = useQuery({ queryKey: ['/user/admin'] });
 
   useRedirect('/', () => {

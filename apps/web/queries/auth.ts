@@ -1,23 +1,18 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { baseUrl, ErrorResponse, fetcher } from "@lib/queryFn";
-import { useTokenStore } from "@stores/tokenStore";
+import { TokenData, useTokenStore } from "@stores/tokenStore";
 
 export type LoginFormData = {
   email: string;
   password: string;
 }
 
-type LoginResponseData = {
-  access_token: string;
-  refresh_token: string;
-}
-
 export const useLogin = () => {
   const setTokens = useTokenStore(s => s.setTokens);
 
-  return useMutation<LoginResponseData, ErrorResponse, LoginFormData>({
+  return useMutation<TokenData, ErrorResponse, LoginFormData>({
     mutationFn: async(credentials) => {
-      const data: LoginResponseData = await fetcher(`${baseUrl}/auth/login`, {
+      const data: TokenData = await fetcher(`${baseUrl}/auth/login`, {
         method: "POST",
         body: credentials,
       });

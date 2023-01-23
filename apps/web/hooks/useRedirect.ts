@@ -1,16 +1,19 @@
 import { DependencyList, useCallback, useEffect } from "react"
 import { useRouter } from "next/router"
+import { useSession } from "./useSession";
 
 type Options = {
   enabled?: boolean;
+  // from?: boolean;
 }
 
 const defaultOptions: Options = {
   enabled: true,
+  // from: false,
 }
 
 export const useRedirect = (
-  url: string | undefined,  // only have undefined for typechecking edgecases
+  url: string | URL,  // only have undefined for typechecking edgecases
   shouldRedirect: (() => boolean) | (() => Promise<boolean>),
   deps: DependencyList,
   options?: Options,
@@ -36,4 +39,14 @@ export const useRedirect = (
 
     if (enabled) redirect()
   }, [url, enabled, callback]);
+}
+
+export const useAuthPageRedirect = () => {
+  const router = useRouter();
+  const { status, data } = useSession();
+
+  useEffect(() => {
+    if (status === 'success' && !!data)
+      router.replace('/user/me');
+  }, [status, data]);
 }

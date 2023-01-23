@@ -71,12 +71,14 @@ export class AuthService {
       throw new UnauthorizedException("Email is not yet verified");
     }
 
-    const { accessToken, refreshToken, refreshTokenExpires } = await this.getTokens({ sub: user.id, email: user.email });
+    const { accessToken, accessTokenExpires, refreshToken, refreshTokenExpires } = await this.getTokens({ sub: user.id, email: user.email });
     await this.userService.updateRefreshTokenById(user.id, refreshToken, refreshTokenExpires);
 
     return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
+      accessToken,
+      accessTokenExpires,
+      refreshToken,
+      refreshTokenExpires,
     };
   }
 
@@ -155,19 +157,18 @@ export class AuthService {
     const tokens = await this.getTokens({ sub: user.id, email: user.email });
     await this.userService.updateRefreshTokenById(user.id, tokens.refreshToken, tokens.refreshTokenExpires, refreshToken);
 
-    return {
-      access_token: tokens.accessToken,
-      refresh_token: tokens.refreshToken,
-    };
+    return tokens;
   }
 
   private async getTokens(payload: JWTPayload) {
+    // 5 minutes in seconds
+    const accessTokenExpires = Math.floor((Date.now() / 1000) + (60 * 5));
     // 30 days in seconds
     const refreshTokenExpires = Math.floor((Date.now() / 1000) + (60 * 60 * 24 * 30));
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
-        expiresIn: '5m',
+        expiresIn: accessTokenExpires,
         secret: this.configService.get('ACCESS_TOKEN_SECRET'),
       }),
 
@@ -179,6 +180,7 @@ export class AuthService {
 
     return {
       accessToken,
+      accessTokenExpires,
       refreshToken,
       refreshTokenExpires,
     };

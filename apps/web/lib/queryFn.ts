@@ -85,9 +85,8 @@ const fetchRequest = async(url: string, options?: AppRequestInit | undefined) =>
 // Refreshes tokens
 const refreshToken = async(refreshToken: string) => {
   const { removeTokens, setTokens } = useTokenStore.getState();
-  const res = await fetch(`${baseUrl}/auth/refresh`, {
+  const res = await fetchRequest(`${baseUrl}/auth/refresh`, {
     headers: {
-      'Content-Type': 'application/json',
       'X-Refresh-Token': `Bearer ${refreshToken}`,
     }
   });
@@ -102,8 +101,8 @@ const refreshToken = async(refreshToken: string) => {
   // Set new tokens and return
   setTokens(data);
   return {
-    accessToken: data.access_token,
-    refreshToken: data.refresh_token,
+    accessToken: data.accessToken,
+    refreshToken: data.refreshToken,
   };
 }
 
