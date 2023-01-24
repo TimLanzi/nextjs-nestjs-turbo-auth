@@ -14,7 +14,7 @@
       "persistent": true
     },
     "build": {
-      "dependsOn": ["^build", "^db:generate"],
+      "dependsOn": ["^db:generate", "^build"],
       "outputs": [
         ".next/**",
         "dist/**"

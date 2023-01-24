@@ -23,9 +23,9 @@
     "zustand": "^4.3.1"
   },
   "devDependencies": {
-    "@acme/config": "*",
-    "@acme/eslint-config-custom": "*",
-    "@acme/tsconfig": "*",
+    "@acme/config": "workspace:*",
+    "@acme/eslint-config-custom": "workspace:*",
+    "@acme/tsconfig": "workspace:*",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.8",
     "@types/js-cookie": "^3.0.2",
