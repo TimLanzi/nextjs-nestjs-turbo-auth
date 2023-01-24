@@ -1,0 +1,5 @@
+{
+  "extends": "@acme/tsconfig/node16.json",
+  "include": ["src/index.ts"],
+  "exclude": ["node_modules"]
+}

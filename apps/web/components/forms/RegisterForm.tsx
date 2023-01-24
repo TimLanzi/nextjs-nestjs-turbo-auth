@@ -4,13 +4,18 @@ import { FormErrorMessage } from '@ui/atoms/FormErrorMessage'
 import { FormField } from '@ui/atoms/FormField'
 import { FormLabel } from '@ui/atoms/FormLabel'
 import { Input } from '@ui/atoms/Input'
-import { RegisterFormData, useRegister } from '@queries/auth'
 import Link from 'next/link'
+import { api } from '@lib/queryClient'
+
+type RegisterFormData = {
+  email: string;
+  password: string;
+}
 
 const RegisterForm = () => {
   const { register, handleSubmit } = useForm<RegisterFormData>();
 
-  const registerUser = useRegister();
+  const registerUser = api.auth.register.useMutation();
 
   return (
     <>
@@ -22,15 +27,17 @@ const RegisterForm = () => {
         </div>
       )}
       
-      { !!registerUser.error?.message && (
+      {/*//@ts-expect-error error body unknown */}
+      { !!registerUser.error?.body?.message && (
         <div className='mb-5'>
           <code className="rounded-md bg-gray-100 p-1  font-mono text-red-600">
-            {registerUser.error.message}
+            {/*//@ts-expect-error error body unknown */}
+            {registerUser.error.body.message}
           </code>
         </div>
       )}
 
-      <form onSubmit={handleSubmit(data => registerUser.mutate(data))}>
+      <form onSubmit={handleSubmit(data => registerUser.mutate({ body: data }))}>
         <FormField>
           <FormLabel>
             Email
@@ -39,9 +46,11 @@ const RegisterForm = () => {
             type="text"
             {...register('email')}
           />
-          { !!registerUser.error?.messages?.email && (
+          {/*//@ts-expect-error error body unknown */}
+          { !!registerUser.error?.body?.messages?.email && (
             <FormErrorMessage>
-              {registerUser.error.messages.email.join('')}
+              {/*//@ts-expect-error error body unknown */}
+              {registerUser.error.body.messages.email.join('')}
             </FormErrorMessage>
           )}
         </FormField>
@@ -54,9 +63,11 @@ const RegisterForm = () => {
             type="text"
             {...register('password')}
           />
-          { !!registerUser.error?.messages?.password && (
+          {/*//@ts-expect-error error body unknown */}
+          { !!registerUser.error?.body?.messages?.password && (
             <FormErrorMessage>
-              {registerUser.error.messages.password.join('')}
+              {/*//@ts-expect-error error body unknown */}
+              {registerUser.error.body.messages.password.join('')}
             </FormErrorMessage>
           )}
         </FormField>

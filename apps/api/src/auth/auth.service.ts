@@ -5,18 +5,12 @@ import { EventEmitter2 } from "@nestjs/event-emitter";
 import { User } from '@acme/db';
 import * as argon2 from "argon2";
 import { UserService } from 'src/user/user.service';
-import { RegisterDto } from './dtos/register.dto';
-import { LoginDto } from './dtos/login.dto';
-import { VerifyEmailDto } from './dtos/verify-email.dto';
-import { ResendVerificationEmailDto } from './dtos/resend-verification-email.dto';
-import { BeginPasswordResetDto } from './dtos/begin-password-reset.dto';
-import { CheckPasswordResetTokenDto } from './dtos/check-password-reset-token.dto';
-import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { LiteUser } from './types/lite-user.type';
 import { JWTPayload } from './types/jwt-payload.type';
 import { generateVerifyToken } from 'src/util/generate-verify-token';
 import { VerifyEmailEvent } from 'src/events/payloads/email/verify-email.event';
 import { PasswordResetEmailEvent } from 'src/events/payloads/email/password-reset.event';
+import { AuthRouteShape } from './auth.contract';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +21,9 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  public async validateUser(data: LoginDto): Promise<User> {
+  public async validateUser(
+    data: AuthRouteShape['login']['body'],
+  ): Promise<User> {
     const user = await this.userService.findByEmail(data.email);
     if (!user) {
       throw new BadRequestException("User does not exist");
@@ -40,7 +36,9 @@ export class AuthService {
     return user;
   }
 
-  public async register(data: RegisterDto): Promise<LiteUser> {
+  public async register(
+    data: AuthRouteShape['register']['body'],
+  ): Promise<LiteUser> {
     const exists = await this.userService.findByEmail(data.email);
 
     if (exists) {
@@ -64,7 +62,9 @@ export class AuthService {
     return { id: newUser.id, email: newUser.email };
   }
   
-  public async login(data: LoginDto) {
+  public async login(
+    data: AuthRouteShape['login']['body'],
+  ) {
     const user = await this.validateUser(data);
 
     if (!user.email_verified) {
@@ -86,7 +86,9 @@ export class AuthService {
     await this.userService.deleteRefreshToken(token);
   }
 
-  public async verifyEmail(data: VerifyEmailDto): Promise<LiteUser> {
+  public async verifyEmail(
+    data: AuthRouteShape['verifyEmail']['body'],
+  ): Promise<LiteUser> {
     const user = await this.userService.checkVerifyTokenAndVerifyEmail(data.token);
     // if (user) {
     //   // TODO maybe send welcome message
@@ -95,7 +97,9 @@ export class AuthService {
     return { id: user.id, email: user.email };
   }
 
-  public async resendVerificationEmail(data: ResendVerificationEmailDto): Promise<LiteUser> {
+  public async resendVerificationEmail(
+    data: AuthRouteShape['resendVerificationEmail']['body'],
+  ): Promise<LiteUser> {
     const user = await this.userService.updateVerifyToken(data.email);
     if (!user.verify_email_token) {
       throw new BadRequestException("Error generating verification token");
@@ -109,7 +113,9 @@ export class AuthService {
     return { id: user.id, email: user.email };
   }
 
-  public async beginPasswordReset(data: BeginPasswordResetDto): Promise<LiteUser> {
+  public async beginPasswordReset(
+    data: AuthRouteShape['startPasswordReset']['body'],
+  ): Promise<LiteUser> {
     const user = await this.userService.updatePasswordResetToken(data.email);
     if (!user.password_reset_token) {
       throw new BadRequestException("Error generating reset token");
@@ -123,13 +129,17 @@ export class AuthService {
     return { id: user.id, email: user.email };
   }
 
-  public async checkPasswordResetToken(data: CheckPasswordResetTokenDto): Promise<LiteUser> {
+  public async checkPasswordResetToken(
+    data: AuthRouteShape['checkPasswordResetToken']['params'],
+  ): Promise<LiteUser> {
     const user = await this.userService.checkPasswordResetToken(data.token);
 
     return { id: user.id, email: user.email };
   }
 
-  public async resetPassword(data: ResetPasswordDto): Promise<LiteUser> {
+  public async resetPassword(
+    data: AuthRouteShape['resetPassword']['body'],
+  ): Promise<LiteUser> {
     const user = await this.userService.resetPassword(data);
 
     return { id: user.id, email: user.email };

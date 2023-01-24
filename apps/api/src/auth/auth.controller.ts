@@ -1,45 +1,39 @@
-import { Body, Controller, Get, Post, UseGuards, Res, Param, Put } from '@nestjs/common';
-import { ZodValidation } from 'src/util/validate-zod.decorator';
+import { Controller, UseGuards, Res, UseFilters } from '@nestjs/common';
 // import { Response } from "express";
+import { Api, ApiDecorator } from '@ts-rest/nest';
 import { AuthService } from './auth.service';
+import { s, AuthControllerShape, AuthRouteShape } from "./auth.contract";
 import { Auth } from './decorators/auth.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { BeginPasswordResetDto, BeginPasswordResetSchema } from './dtos/begin-password-reset.dto';
-import { CheckPasswordResetTokenDto, CheckPasswordResetTokenSchema } from './dtos/check-password-reset-token.dto';
-import { LoginDto, LoginSchema } from './dtos/login.dto';
-import { ResetPasswordDto, ResetPasswordSchema } from './dtos/reset-password.dto';
-import { RegisterDto, RegisterSchema } from './dtos/register.dto';
-import { ResendVerificationEmailDto, ResendVerificationSchema } from './dtos/resend-verification-email.dto';
-import { VerifyEmailDto, VerifyEmailSchema } from './dtos/verify-email.dto';
 import { AccessAuthGuard } from './guards/access-jwt.guard';
 import { RefreshAuthGuard } from './guards/refresh-jwt.guard';
 import { type ICurrentUser } from './types/current-user.type';
 import { type RefreshUser } from './types/refresh-user.type';
+import { ZodExceptionFilter } from 'src/util/zod-exception.filter';
 
-@Controller('auth')
-export class AuthController {
+@Controller()
+@UseFilters(new ZodExceptionFilter())
+export class AuthController implements AuthControllerShape {
   constructor(private authService: AuthService) {}
 
-  @ZodValidation(LoginSchema)
-  @Post('login')
+  @Api(s.route.auth.login)
   async login(
-    @Body() data: LoginDto,
+    @ApiDecorator() { body }: AuthRouteShape['login'],
     // @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.authService.login(data);
+    const result = await this.authService.login(body);
 
     // For HTTP only cookie. Uncomment to use this strategy instead.
     // res.cookie('access-token', result.access_token, { httpOnly: true })
     return result;
   }
 
-  @ZodValidation(RegisterSchema)
-  @Post('register')
+  @Api(s.route.auth.register)
   async register(
-    @Body() data: RegisterDto,
+    @ApiDecorator() { body }: AuthRouteShape['register'],
     // @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.authService.register(data);
+    const result = await this.authService.register(body);
 
     // For HTTP only cookie. Uncomment to use this strategy instead.
     // res.cookie('access-token', result.access_token, { httpOnly: true })
@@ -47,7 +41,7 @@ export class AuthController {
   }
 
   @UseGuards(AccessAuthGuard, RefreshAuthGuard)
-  @Post('logout')
+  @Api(s.route.auth.logout)
   async logout(
     @CurrentUser() user: RefreshUser
     // @Res({ passthrough: true }) res: Response,
@@ -59,7 +53,7 @@ export class AuthController {
   }
 
   @Auth()
-  @Get('me')
+  @Api(s.route.auth.session)
   async getCurrentUser(
     @CurrentUser() user: ICurrentUser
   ) {
@@ -69,7 +63,7 @@ export class AuthController {
   }
 
   @UseGuards(RefreshAuthGuard)
-  @Get('refresh')
+  @Api(s.route.auth.refresh)
   async refresh(
     @CurrentUser() user: RefreshUser,
   ) {
@@ -79,43 +73,38 @@ export class AuthController {
     return this.authService.refreshTokens(userId, refreshToken);
   }
 
-  @ZodValidation(VerifyEmailSchema)
-  @Post('verify-email')
+  @Api(s.route.auth.verifyEmail)
   async verifyEmail(
-    @Body() data: VerifyEmailDto,
+    @ApiDecorator() { body }: AuthRouteShape['verifyEmail'],
   ) {
-    return this.authService.verifyEmail(data);
+    return this.authService.verifyEmail(body);
   }
 
-  @ZodValidation(ResendVerificationSchema)
-  @Post('resend-verification-email')
+  @Api(s.route.auth.resendVerificationEmail)
   async resendVerificationEmail(
-    @Body() data: ResendVerificationEmailDto,
+    @ApiDecorator() { body }: AuthRouteShape['resendVerificationEmail'],
   ) {
-    return this.authService.resendVerificationEmail(data);
+    return this.authService.resendVerificationEmail(body);
   }
 
-  @ZodValidation(BeginPasswordResetSchema)
-  @Put('password-reset')
+  @Api(s.route.auth.startPasswordReset)
   async startPasswordReset(
-    @Body() data: BeginPasswordResetDto,
+    @ApiDecorator() { body }: AuthRouteShape['startPasswordReset'],
   ) {
-    return this.authService.beginPasswordReset(data);
+    return this.authService.beginPasswordReset(body);
   }
 
-  @ZodValidation(CheckPasswordResetTokenSchema)
-  @Get('password-reset/:token')
+  @Api(s.route.auth.checkPasswordResetToken)
   async checkPasswordResetToken(
-    @Param() data: CheckPasswordResetTokenDto,
+    @ApiDecorator() { params }: AuthRouteShape['checkPasswordResetToken'],
   ) {
-    return this.authService.checkPasswordResetToken(data);
+    return this.authService.checkPasswordResetToken(params);
   }
 
-  @ZodValidation(ResetPasswordSchema)
-  @Post('password-reset')
+  @Api(s.route.auth.resetPassword)
   async resetPassword(
-    @Body() data: ResetPasswordDto
+    @ApiDecorator() { body }: AuthRouteShape['resetPassword'],
   ) {
-    return this.authService.resetPassword(data);
+    return this.authService.resetPassword(body);
   }
 }

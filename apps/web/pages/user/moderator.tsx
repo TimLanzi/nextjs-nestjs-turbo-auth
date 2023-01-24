@@ -4,6 +4,7 @@ import Head from 'next/head'
 import { useRedirect } from '@hooks/useRedirect';
 import { useSession } from '@hooks/useSession';
 import { useRouter } from 'next/router';
+import { api } from '@lib/queryClient';
 
 const Admin: NextPage = () => {
   const router = useRouter();
@@ -11,7 +12,7 @@ const Admin: NextPage = () => {
     required: true,
     onUnauthenticated: () => router.replace('/auth/login'),
   });
-  const { data, status } = useQuery({ queryKey: ['/user/moderator'] });
+  const { data, status } = api.user.moderatorTest.useQuery(['moderator-test'])
 
   useRedirect('/', () => {
     return status === 'error'

@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { baseUrl, fetcher } from "@lib/queryFn";
 import { useTokenStore } from "@stores/tokenStore";
+import { api } from "@lib/queryClient";
 
 type SessionUser = {
   id: string;
@@ -27,12 +28,15 @@ export const useSession = (options?: Options) => {
   const client = useQueryClient();
   const [hasTokens, removeTokens] = useTokenStore(s => [
     !!(s.accessToken || s.refreshToken),
-    s.removeTokens
+    s.removeTokens,
   ]);
-  const { data, status, remove, refetch, ...rest } = useQuery<SessionUser, Error>({
-    queryKey: ['/auth/me'],
+  const { data, status, remove, refetch, ...rest } = api.auth.session.useQuery(['/auth/me'], {}, {
     enabled: hasTokens,
   });
+  // const { data, status, remove, refetch, ...rest } = useQuery<SessionUser, Error>({
+  //   queryKey: ['/auth/me'],
+  //   enabled: hasTokens,
+  // });
 
   const userLoggedIn = useMemo(() => {
     return hasTokens && (status === 'success' && !!data)
@@ -55,5 +59,5 @@ export const useSession = (options?: Options) => {
     router.push('/auth/login');
   }
 
-  return { ...rest, data, status, logout };
+  return { ...rest, data: data?.body, status, logout };
 }

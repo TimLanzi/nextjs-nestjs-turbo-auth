@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@acme/db": "workspace:*",
+    "@acme/rpc": "workspace:*",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.2.0",
     "@nestjs/core": "^9.0.0",
@@ -32,6 +33,7 @@
     "@nestjs/passport": "^9.0.0",
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/schedule": "^2.1.0",
+    "@ts-rest/nest": "^3.14.0",
     "argon2": "^0.30.3",
     "cookie-parser": "^1.4.6",
     "passport": "^0.6.0",

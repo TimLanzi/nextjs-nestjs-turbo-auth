@@ -1,11 +1,15 @@
 import React from 'react'
 import { useForm } from 'react-hook-form';
-import { ResetPasswordFormData, useResetPassword } from '@queries/auth';
 import { FormField } from '@ui/atoms/FormField';
 import { Input } from '@ui/atoms/Input';
 import { Button } from '@ui/atoms/Button';
 import { FormLabel } from '@ui/atoms/FormLabel';
 import { FormErrorMessage } from '@ui/atoms/FormErrorMessage';
+import { api } from '@lib/queryClient';
+
+type ResetPasswordFormData = {
+  password: string;
+}
 
 type Props = {
   token: string;
@@ -15,7 +19,7 @@ type Props = {
 const PasswordResetForm: React.FC<Props> = ({ token, email }) => {
   const { register, handleSubmit } = useForm<ResetPasswordFormData>();
   
-  const resetPassword = useResetPassword()
+  const resetPassword = api.auth.resetPassword.useMutation()
 
   return (
     <>
@@ -26,20 +30,22 @@ const PasswordResetForm: React.FC<Props> = ({ token, email }) => {
           </code>
         </div>
       )}
-      { !!resetPassword.error?.message && (
+      {/*//@ts-expect-error error body unknown */}
+      { !!resetPassword.error?.body?.message && (
         <div className='mb-5'>
           <code className="rounded-md bg-gray-100 p-1 font-mono text-red-600">
-            {JSON.stringify({error: resetPassword.error?.message})}
+            {/*//@ts-expect-error error body unknown */}
+            {JSON.stringify({error: resetPassword.error.body.message})}
           </code>
         </div>
       )}
       <form
         onSubmit={handleSubmit(form => {
-          return resetPassword.mutate({
+          return resetPassword.mutate({ body: {
             token,
             email,
             ...form,
-          });
+          }});
         })}
       >
         <FormField>
@@ -50,9 +56,11 @@ const PasswordResetForm: React.FC<Props> = ({ token, email }) => {
             type="password"
             {...register('password')}
           />
-          { !!resetPassword.error?.messages?.password && (
+          {/*//@ts-expect-error error body unknown */}
+          { !!resetPassword.error?.body?.messages?.password && (
             <FormErrorMessage>
-              {resetPassword.error.messages.password}
+              {/*//@ts-expect-error error body unknown */}
+              {resetPassword.error.body.messages.password}
             </FormErrorMessage>
           )}
         </FormField>

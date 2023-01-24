@@ -5,12 +5,16 @@ import { Input } from '@ui/atoms/Input';
 import { Button } from '@ui/atoms/Button';
 import { FormLabel } from '@ui/atoms/FormLabel';
 import { FormErrorMessage } from '@ui/atoms/FormErrorMessage';
-import { StartPasswordResetFormData, useStartPasswordReset } from '@queries/auth';
+import { api } from '@lib/queryClient';
+
+type StartPasswordResetFormData = {
+  email: string;
+}
 
 const StartPasswordResetForm = () => {
   const { register, handleSubmit } = useForm<StartPasswordResetFormData>()
 
-  const startReset = useStartPasswordReset();
+  const startReset = api.auth.startPasswordReset.useMutation();
 
   return (
     <>
@@ -21,15 +25,17 @@ const StartPasswordResetForm = () => {
           </code>
         </div>
       )}
-      { !!startReset.error?.message && (
+      {/*//@ts-expect-error error body unknown */}
+      { !!startReset.error?.body?.message && (
         <div className='mb-5'>
           <code className="rounded-md bg-gray-100 p-1 font-mono text-red-600">
-            {startReset.error.message}
+            {/*//@ts-expect-error error body unknown */}
+            {startReset.error.body.message}
           </code>
         </div>
       )}
 
-      <form onSubmit={handleSubmit(data => startReset.mutate(data))}>
+      <form onSubmit={handleSubmit(data => startReset.mutate({ body: data }))}>
         <FormField>
           <FormLabel>
             Email
@@ -38,9 +44,11 @@ const StartPasswordResetForm = () => {
             type="text"
             {...register('email')}
           />
-          { !!startReset.error?.messages?.email && (
+          {/*//@ts-expect-error error body unknown */}
+          { !!startReset.error?.body?.messages?.email && (
             <FormErrorMessage>
-              {startReset.error.messages.email}
+              {/*//@ts-expect-error error body unknown */}
+              {startReset.error.body.messages.email}
             </FormErrorMessage>
           )}
         </FormField>

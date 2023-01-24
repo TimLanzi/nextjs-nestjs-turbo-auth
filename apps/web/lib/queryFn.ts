@@ -1,7 +1,8 @@
 import { QueryFunction } from "@tanstack/react-query"
 import { useTokenStore } from "@stores/tokenStore";
+import { env } from "@env/client.mjs";
 
-export const baseUrl = `http://localhost:4000`;
+export const baseUrl = env.NEXT_PUBLIC_API_URL;
 
 interface AppRequestInit extends RequestInit {
   body?: any | undefined;
@@ -14,7 +15,7 @@ export type ErrorResponse = {
 
 // Wrapper for fetcher function to be used for react-query
 export const defaultQueryFn: QueryFunction = async({ queryKey }) => {
-  const data = await fetcher(`${baseUrl}${queryKey[0]}`, {});
+  const { data } = await fetcher(`${baseUrl}${queryKey[0]}`, {});
   // const data = await res.json()
 
   return data;
@@ -58,13 +59,13 @@ export const fetcher = async(url: string, options?: AppRequestInit | undefined) 
       if (!res.ok) {
         throw getError(data);
       }
-      return data;
+      return { res, data };
     }
     throw getError(data);
   }
 
   let data = await res.json();
-  return data;
+  return { res, data };
 }
 
 // Wrapper of fetch function with application/json set by default
@@ -110,11 +111,11 @@ const getError = (err: any) => {
   if (!!err.message) {
     // if err.message is an object or array, put errors in `messages` (plural)
     if (typeof err.message === 'object' || Array.isArray(err.message)) {
-      return { messages: err.message };
+      return { status: err.statusCode, messages: err.message, error: err.error };
     }
     
-    return { message: err.message };
+    return { status: err.statusCode, message: err.message, error: err.error };
   }
 
-  return { message: err.error };
+  return { status: err.statusCode, message: err.error };
 }

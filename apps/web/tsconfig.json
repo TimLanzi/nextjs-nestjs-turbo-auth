@@ -8,8 +8,7 @@
       "@hooks/*": ["hooks/*"],
       "@lib/*": ["lib/*"],
       "@env/*": ["env/*"],
-      "@stores/*": ["store/*"],
-      "@queries/*": ["queries/*"]
+      "@stores/*": ["store/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"]

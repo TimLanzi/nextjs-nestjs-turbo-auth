@@ -5,23 +5,36 @@ import { FormField } from '@ui/atoms/FormField'
 import { FormLabel } from '@ui/atoms/FormLabel'
 import { Input } from '@ui/atoms/Input'
 import { FormErrorMessage } from '@ui/atoms/FormErrorMessage';
-import { LoginFormData, useLogin } from '@queries/auth';
 import Link from 'next/link';
+import { api } from "@lib/queryClient";
+import { useTokenStore } from "@stores/tokenStore";
+
+type LoginFormData = {
+  email: string;
+  password: string;
+}
 
 const LoginForm = () => {
+  const setTokens = useTokenStore(s => s.setTokens);
   const { register, handleSubmit } = useForm<LoginFormData>()
 
-  const login = useLogin();
+  // const login = useLogin();
+  const login = api.auth.login.useMutation({
+    onSuccess: ({ body }) => setTokens(body),
+  });
 
   return (
     <>
-      { !!login.error?.message && (
+      {/*//@ts-expect-error error body unknown */}
+      { !!login.error?.body?.message && (
         <div className='mb-5 flex flex-col'>
           <code className="rounded-md bg-gray-100 p-1 font-mono text-red-600">
-            {login.error.message}
+            {/*//@ts-expect-error error body unknown */}
+            {login.error.body.message}
           </code>
 
-          { login.error.message.includes("verified") && (
+          {/*//@ts-expect-error error body unknown */}
+          { login.error.body.message.includes("verified") && (
             <Link className='text-blue-500' href="/auth/resend-verification">
               Send a new link?
             </Link>
@@ -29,7 +42,7 @@ const LoginForm = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit(data => login.mutate(data))}>
+      <form onSubmit={handleSubmit(data => login.mutate({ body: data }))}>
         <FormField>
           <FormLabel>
             Email
@@ -38,9 +51,11 @@ const LoginForm = () => {
             type="text"
             {...register('email')}
           />
-          { !!login.error?.messages?.email && (
+          {/*//@ts-expect-error error body unknown */}
+          { !!login.error?.body?.messages?.email && (
             <FormErrorMessage>
-              {login.error.messages.email.join('')}
+              {/*//@ts-expect-error error body unknown */}
+              {login.error.body.messages.email.join('')}
             </FormErrorMessage>
           )}
         </FormField>
@@ -53,9 +68,11 @@ const LoginForm = () => {
             type='password'
             {...register('password')}
           />
-          { !!login.error?.messages?.password && (
+          {/*//@ts-expect-error error body unknown */}
+          { !!login.error?.body?.messages?.password && (
             <FormErrorMessage>
-              {login.error.messages.password.join('')}
+              {/*//@ts-expect-error error body unknown */}
+              {login.error.body.messages.password.join('')}
             </FormErrorMessage>
           )}
         </FormField>

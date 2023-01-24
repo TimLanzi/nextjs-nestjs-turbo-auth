@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react'
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useCheckPasswordResetToken } from '@queries/auth';
 import PasswordResetForm from '@components/forms/PasswordResetForm';
+import { api } from '@lib/queryClient';
 
 const PasswordReset = () => {
   const router = useRouter();
@@ -13,7 +13,11 @@ const PasswordReset = () => {
       : router.query.token;
   }, [router.query]);
   
-  const { data, error, isLoading } = useCheckPasswordResetToken(token);
+  const { data, error, isLoading } = api.auth.checkPasswordResetToken.useQuery(
+    ['check-password-reset', token],
+    { params: { token: token as string }},
+    { enabled: !!token },
+  );
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-2">
@@ -37,10 +41,10 @@ const PasswordReset = () => {
             </div>
           )}
 
-          { !!data?.email && (
+          { !!data?.body?.email && (
             <PasswordResetForm
-              token={token}
-              email={data.email}
+              token={token as string}
+              email={data.body.email}
             />
           )}
         </div>

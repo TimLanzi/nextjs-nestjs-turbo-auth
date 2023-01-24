@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react'
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { useVerifyEmail } from '@queries/auth';
+import { api } from '@lib/queryClient';
 
 const VerifyEmail = () => {
   const sentRequest = useRef(false);
@@ -14,11 +14,11 @@ const VerifyEmail = () => {
       : router.query.token;
   }, [router.query]);
 
-  const verifyEmail = useVerifyEmail();
+  const verifyEmail = api.auth.verifyEmail.useMutation();
 
   useEffect(() => {
     if (!!token && !sentRequest.current) {
-      verifyEmail.mutate({ token });
+      verifyEmail.mutate({ body: { token }});
       sentRequest.current = true;
     }
   }, [token, verifyEmail])
@@ -40,14 +40,14 @@ const VerifyEmail = () => {
           { !!verifyEmail.error && (
             <div className='mb-5'>
               <code className="rounded-md bg-gray-100 p-1 font-mono text-red-600">
-                {JSON.stringify({ ...verifyEmail.error })}
+                {JSON.stringify({ ...verifyEmail.error.body as any })}
               </code>
             </div>
           )}
           { !!verifyEmail.data && (
             <div className='mb-5 flex flex-col'>
               <code className="rounded-md bg-gray-100 p-1 font-mono">
-                {JSON.stringify({ ...verifyEmail.data })}
+                {JSON.stringify({ ...verifyEmail.data.body })}
               </code>
               <Link className="text-blue-500" href="/auth/login">
                 Log in
