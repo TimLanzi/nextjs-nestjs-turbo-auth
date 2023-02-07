@@ -1,17 +1,18 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
-import { User } from '@acme/db';
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { Cron } from "@nestjs/schedule";
+import { User } from "@acme/db";
 import * as argon2 from "argon2";
-import { PrismaService } from 'src/prisma.service';
-import { CreateNewUserDto } from './dtos/create-new-user.dto';
-import { generateVerifyToken } from 'src/util/generate-verify-token';
-import { ResetPasswordDto } from 'src/auth/dtos/reset-password.dto';
+import { generateVerifyToken } from "src/util/generate-verify-token";
+
+import { PrismaService } from "src/prisma.service";
+import { CreateNewUserDto } from "./dtos/create-new-user.dto";
+import { CheckPasswordResetTokenDto } from "src/auth/dtos/check-password-reset-token.dto";
+import { ResetPasswordDto } from "src/auth/dtos/reset-password.dto";
+import { VerifyEmailDto } from "src/auth/dtos/verify-email.dto";
 
 @Injectable()
 export class UserService {
-  constructor(
-    private prisma: PrismaService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   public async findById(id: string) {
     return this.prisma.user.findUnique({
@@ -84,7 +85,7 @@ export class UserService {
       await this.prisma.refreshToken.delete({
         where: { token },
       });
-    } catch(e) {
+    } catch (e) {
       throw new BadRequestException("Error logging out");
     }
   }
@@ -95,10 +96,11 @@ export class UserService {
     });
   }
 
-  public async checkVerifyTokenAndVerifyEmail(token: string) {
+  public async checkVerifyTokenAndVerifyEmail(data: VerifyEmailDto) {
     const exists = await this.prisma.user.findFirst({
       where: {
-        verify_email_token: token,
+        email: data.email,
+        verify_email_token: data.token,
         verify_email_expires: { gte: new Date() },
       },
     });
@@ -133,14 +135,15 @@ export class UserService {
 
       return user;
     } catch {
-      throw new BadRequestException("No user with that email could be found")
+      throw new BadRequestException("No user with that email could be found");
     }
   }
 
-  public async checkPasswordResetToken(token: string) {
+  public async checkPasswordResetToken(data: CheckPasswordResetTokenDto) {
     const user = await this.prisma.user.findFirst({
       where: {
-        password_reset_token: token,
+        email: data.email,
+        password_reset_token: data.token,
         password_reset_expires: { gte: new Date() },
       },
     });
@@ -165,7 +168,7 @@ export class UserService {
 
       return user;
     } catch {
-      throw new BadRequestException("No user with that email could be found")
+      throw new BadRequestException("No user with that email could be found");
     }
   }
 
@@ -183,7 +186,9 @@ export class UserService {
     }
 
     if (!!(await argon2.verify(exists.password, data.password))) {
-      throw new BadRequestException("New password cannot be the same as the old password");
+      throw new BadRequestException(
+        "New password cannot be the same as the old password",
+      );
     }
 
     const hash = await argon2.hash(data.password);
@@ -200,8 +205,8 @@ export class UserService {
   }
 
   // Delete expired refresh tokens once every hour
-  @Cron('0 * * * *', {
-    name: 'CLEAN_REFRESH_TOKENS'
+  @Cron("0 * * * *", {
+    name: "CLEAN_REFRESH_TOKENS",
   })
   public async cleanRefreshTokens() {
     this.prisma.refreshToken.deleteMany({

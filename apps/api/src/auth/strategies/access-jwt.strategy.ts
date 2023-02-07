@@ -1,15 +1,18 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
-import { ConfigService } from '@nestjs/config';
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { User } from '@acme/db';
-import { Request } from 'express';
-import { PrismaService } from 'src/prisma.service';
-import { JWTPayload } from '../types/jwt-payload.type';
-import { type ICurrentUser } from '../types/current-user.type';
+import { ForbiddenException, Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { PassportStrategy } from "@nestjs/passport";
+import { Request } from "express";
+import { ExtractJwt, Strategy } from "passport-jwt";
+
+import { PrismaService } from "src/prisma.service";
+import { type ICurrentUser } from "../types/current-user.type";
+import { JWTPayload } from "../types/jwt-payload.type";
 
 @Injectable()
-export class AccessJwtStrategy extends PassportStrategy(Strategy, 'access-jwt') {
+export class AccessJwtStrategy extends PassportStrategy(
+  Strategy,
+  "access-jwt",
+) {
   constructor(
     private prisma: PrismaService,
     protected configService: ConfigService,
@@ -17,10 +20,10 @@ export class AccessJwtStrategy extends PassportStrategy(Strategy, 'access-jwt') 
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         AccessJwtStrategy.extractJwtFromCookies,
-        AccessJwtStrategy.extractJwtFromHeader
+        AccessJwtStrategy.extractJwtFromHeader,
       ]),
       ignoreExpiration: false,
-      secretOrKey: configService.get('ACCESS_TOKEN_SECRET'),
+      secretOrKey: configService.get("ACCESS_TOKEN_SECRET"),
     });
   }
 
@@ -48,17 +51,17 @@ export class AccessJwtStrategy extends PassportStrategy(Strategy, 'access-jwt') 
   }
 
   private static extractJwtFromCookies(req: Request): string | null {
-    if (req.cookies && 'access-token' in req.cookies) {
-      return req.cookies['access-token'];
+    if (req.cookies && "access-token" in req.cookies) {
+      return req.cookies["access-token"];
     }
     return null;
   }
 
   private static extractJwtFromHeader(req: Request): string | null {
-    if ('x-access-token' in req.headers) {
-      let token: string = req.headers['x-access-token'] as string;
-      if (token.startsWith('Bearer ')) {
-        token = token.replace('Bearer ', '');
+    if ("x-access-token" in req.headers) {
+      let token: string = req.headers["x-access-token"] as string;
+      if (token.startsWith("Bearer ")) {
+        token = token.replace("Bearer ", "");
       }
       return token;
     }

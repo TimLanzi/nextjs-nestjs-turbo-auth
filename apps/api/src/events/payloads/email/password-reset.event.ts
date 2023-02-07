@@ -2,9 +2,9 @@ import { BaseEvent } from "../base.event";
 
 type IPasswordResetEmailEvent = {
   email: string;
-  token: string;
-}
+  url: string;
+};
 
 export class PasswordResetEmailEvent extends BaseEvent<IPasswordResetEmailEvent> {
-  static id = 'email.password-reset';
+  static id = "email.password-reset";
 }

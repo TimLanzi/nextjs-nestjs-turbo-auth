@@ -3,13 +3,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@ui/*": ["components/ui/*"],
-      "@components/*": ["components/*"],
-      "@hooks/*": ["hooks/*"],
-      "@lib/*": ["lib/*"],
-      "@env/*": ["env/*"],
-      "@stores/*": ["store/*"],
-      "@queries/*": ["queries/*"]
+      "~/*": ["src/*"],
+      "~/ui/*": ["src/components/ui/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"]

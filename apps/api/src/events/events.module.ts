@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
-import { EmailEvents } from './email.events';
+import { Module } from "@nestjs/common";
+
+import { EmailEvents } from "./email.events";
 
 @Module({
   providers: [EmailEvents],

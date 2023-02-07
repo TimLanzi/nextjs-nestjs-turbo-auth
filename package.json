@@ -16,6 +16,7 @@
     "db:push": "turbo db:push",
     "build": "turbo build",
     "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "dev": "turbo dev start:dev db:studio",
     "type-check": "turbo type-check"
   },
@@ -23,7 +24,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "^3.7.1",
     "@acme/eslint-config-custom": "workspace:*",
+    "prettier": "2.8.3",
+    "prettier-plugin-tailwindcss": "^0.2.2",
+    "turbo": "1.7.3",
     "rimraf": "^3.0.2",
     "typescript": "4.9.4"
   }

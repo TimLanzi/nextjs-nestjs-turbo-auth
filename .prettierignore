@@ -1,0 +1,4 @@
+**/dist
+**/.next
+**/storybook-static
+**/node_modules

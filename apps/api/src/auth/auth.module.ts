@@ -1,13 +1,13 @@
-import { Module } from '@nestjs/common';
-import { PassportModule } from '@nestjs/passport';
-import { JwtModule } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { UserModule } from 'src/user/user.module';
-import { PrismaService } from 'src/prisma.service';
-import { AccessJwtStrategy } from './strategies/access-jwt.strategy';
-import { RefreshJwtStrategy } from './strategies/refresh-jwt.strategy';
+import { Module } from "@nestjs/common";
+import { JwtModule } from "@nestjs/jwt";
+import { PassportModule } from "@nestjs/passport";
+
+import { UserModule } from "src/user/user.module";
+import { AuthService } from "./auth.service";
+import { PrismaService } from "src/prisma.service";
+import { AuthController } from "./auth.controller";
+import { AccessJwtStrategy } from "./strategies/access-jwt.strategy";
+import { RefreshJwtStrategy } from "./strategies/refresh-jwt.strategy";
 
 @Module({
   imports: [
@@ -20,7 +20,12 @@ import { RefreshJwtStrategy } from './strategies/refresh-jwt.strategy';
       // }),
     }),
   ],
-  providers: [AuthService, AccessJwtStrategy, RefreshJwtStrategy, PrismaService],
+  providers: [
+    AuthService,
+    AccessJwtStrategy,
+    RefreshJwtStrategy,
+    PrismaService,
+  ],
   controllers: [AuthController],
   // exports: [AuthService],
 })
